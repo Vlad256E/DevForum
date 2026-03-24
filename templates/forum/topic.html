@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Название темы - DEVHUB{% endblock %}
+
+{% block content %}
+<div class="text-sm text-brandBlue mb-6 flex items-center gap-2">
+    <a href="/" class="hover:underline">Главная</a>
+    <span class="text-slate-400">/</span>
+    <a href="#" class="hover:underline">Программирование</a>
+    <span class="text-slate-400">/</span>
+    <span class="text-slate-600">Название темы</span>
+</div>
+
+<div class="flex flex-col lg:flex-row gap-8">
+    
+    <div class="flex-1 flex flex-col gap-6">
+        
+        <div class="bg-white rounded-lg shadow-sm border border-slate-100 p-6 relative">
+            <button class="absolute top-6 right-6 text-slate-400 hover:text-slate-600">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"></path></svg>
+            </button>
+
+            <h1 class="text-2xl font-bold text-slate-800 mb-6">Название темы</h1>
+            
+            <div class="flex items-center gap-4 mb-6">
+                <div class="w-12 h-12 rounded-full bg-slate-200 overflow-hidden">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=CodePro" alt="Avatar" class="w-full h-full object-cover">
+                </div>
+                <div>
+                    <div class="font-bold text-slate-700 text-lg">CodePro</div>
+                    <div class="text-sm text-slate-500">Пост от: 2 часа назад</div>
+                </div>
+            </div>
+
+            <div class="text-slate-700 mb-6 leading-relaxed">
+                <p class="mb-4">Текст темы. Здесь автор описывает свою проблему, делится мыслями или задаёт вопрос сообществу.</p>
+                
+                <div class="bg-slate-100 rounded-md p-4 font-mono text-sm text-slate-600 border border-slate-200">
+                    Пример кода<br>
+                    <span class="text-brandBlue">def</span> <span class="text-purple-600">hello_world</span>():<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;print(<span class="text-green-600">"Привет, DEVHUB!"</span>)
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <button class="bg-brandBlue hover:bg-blue-800 text-white font-semibold py-2 px-6 rounded shadow-sm transition">
+                    ОТВЕТИТЬ
+                </button>
+                <button class="bg-white hover:bg-slate-50 text-slate-600 font-semibold py-2 px-6 rounded border border-slate-200 shadow-sm transition">
+                    ПОДЕЛИТЬСЯ
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm border border-slate-100 p-6 relative">
+            <button class="absolute top-6 right-6 text-slate-400 hover:text-slate-600">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"></path></svg>
+            </button>
+
+            <div class="flex items-center gap-4 mb-4">
+                <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=PythonGuru" alt="Avatar" class="w-full h-full object-cover">
+                </div>
+                <div>
+                    <div class="font-bold text-slate-700">PythonGuru</div>
+                    <div class="text-sm text-slate-500">Пример ответа</div>
+                </div>
+            </div>
+            <div class="text-slate-700">
+                <p>Привет! Попробуй использовать виртуальное окружение, это должно решить твою проблему с зависимостями.</p>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm border border-slate-100 p-6 mt-4">
+            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Ответ</h3>
+            
+            <form>
+                <div class="bg-slate-50 border border-slate-200 border-b-0 rounded-t-lg p-2 flex gap-1 items-center">
+                    <button type="button" class="p-1.5 text-slate-500 hover:bg-slate-200 hover:text-slate-800 rounded font-bold transition">B</button>
+                    <button type="button" class="p-1.5 text-slate-500 hover:bg-slate-200 hover:text-slate-800 rounded italic transition text-lg leading-none">I</button>
+                    <button type="button" class="p-1.5 text-slate-500 hover:bg-slate-200 hover:text-slate-800 rounded underline transition">U</button>
+                    <span class="w-px h-5 bg-slate-300 mx-1"></span>
+                    <button type="button" class="p-1.5 text-slate-500 hover:bg-slate-200 hover:text-slate-800 rounded transition font-mono">&lt;/&gt;</button>
+                    <button type="button" class="p-1.5 text-slate-500 hover:bg-slate-200 hover:text-slate-800 rounded transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                    </button>
+                    <button type="button" class="p-1.5 text-slate-500 hover:bg-slate-200 hover:text-slate-800 rounded transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
+                    </button>
+                </div>
+                
+                <textarea rows="4" class="w-full border border-slate-200 rounded-b-lg p-4 focus:outline-none focus:ring-1 focus:ring-brandBlue focus:border-brandBlue resize-y bg-slate-50/50" placeholder="Напишите ваш ответ..."></textarea>
+                
+                <div class="mt-4 flex justify-end">
+                    <button type="submit" class="bg-brandBlue hover:bg-blue-800 text-white font-semibold py-2 px-8 rounded shadow-sm transition">
+                        ОТПРАВИТЬ
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+    <div class="w-full lg:w-72">
+        
+        <div class="bg-white rounded-lg shadow-sm border border-slate-100 p-6">
+            <h3 class="text-lg font-bold text-slate-800 mb-6 pb-4 border-b border-slate-100">Информация о теме</h3>
+            
+            <div class="flex justify-around mb-6 text-center">
+                <div>
+                    <span class="block text-2xl font-bold text-slate-700">54</span>
+                    <span class="text-xs text-slate-400 uppercase">Total Posts</span>
+                </div>
+                <div class="w-px bg-slate-200"></div>
+                <div>
+                    <span class="block text-2xl font-bold text-slate-700">20</span>
+                    <span class="text-xs text-slate-400 uppercase">Liked Posts</span>
+                </div>
+            </div>
+            
+            <button class="w-full bg-[#5c7c94] hover:bg-slate-700 text-white font-semibold py-2.5 rounded shadow-sm transition">
+                МОДЕРАЦИЯ
+            </button>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
