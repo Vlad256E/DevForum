@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Django
+db.sqlite3
+media/
+static/
+!static/.gitkeep
+
+# Node / Tailwind
+node_modules/
+dist/
+.npm
