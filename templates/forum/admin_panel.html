@@ -14,19 +14,41 @@
         
         <div class="bg-white rounded-lg shadow-sm border border-slate-100 p-6">
             <h3 class="text-lg font-bold text-slate-800 mb-4 pb-3 border-b border-slate-100">Управление категориями</h3>
-            <div class="space-y-3 mb-6">
+            
+            <form action="{% url 'add_category' %}" method="POST" class="mb-6 flex flex-col gap-3">
+                {% csrf_token %}
+                <input type="text" name="name" placeholder="Название раздела..." required class="w-full bg-slate-50 border border-slate-200 rounded py-2 px-4 focus:outline-none focus:border-brandBlue focus:ring-1 focus:ring-brandBlue text-sm">
+                <input type="text" name="description" placeholder="Описание (необязательно)..." class="w-full bg-slate-50 border border-slate-200 rounded py-2 px-4 focus:outline-none focus:border-brandBlue focus:ring-1 focus:ring-brandBlue text-sm">
+                
+                <button type="submit" class="w-full bg-brandBlue hover:bg-blue-800 text-white font-semibold py-2.5 rounded shadow-sm transition flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    ДОБАВИТЬ РАЗДЕЛ
+                </button>
+            </form>
+
+            <div class="space-y-3 mb-2 max-h-64 overflow-y-auto pr-2">
+                {% for category in categories %}
                 <div class="flex justify-between items-center bg-slate-50 p-3 rounded border border-slate-200">
-                    <span class="font-medium text-slate-700">Программирование</span>
+                    <div class="flex flex-col">
+                        <span class="font-medium text-slate-700">{{ category.name }}</span>
+                        {% if category.description %}
+                            <span class="text-xs text-slate-400">{{ category.description|truncatechars:40 }}</span>
+                        {% endif %}
+                    </div>
+                    
                     <div class="flex gap-2">
-                        <button class="text-slate-400 hover:text-brandBlue"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>
-                        <button class="text-slate-400 hover:text-red-500"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                        <form action="{% url 'delete_category' category.id %}" method="POST" onsubmit="return confirm('Точно удалить раздел? Все темы внутри него тоже исчезнут!');">
+                            {% csrf_token %}
+                            <button type="submit" class="text-slate-400 hover:text-red-500 transition" title="Удалить">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </form>
                     </div>
                 </div>
+                {% empty %}
+                <p class="text-sm text-slate-500 text-center py-2">Разделов пока нет.</p>
+                {% endfor %}
             </div>
-            <button class="w-full bg-brandBlue hover:bg-blue-800 text-white font-semibold py-2.5 rounded shadow-sm transition flex items-center justify-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                ДОБАВИТЬ РАЗДЕЛ
-            </button>
         </div>
 
         <div class="bg-white rounded-lg shadow-sm border border-slate-100 p-6">
@@ -34,11 +56,11 @@
             <div class="grid grid-cols-2 gap-4">
                 <div class="bg-blue-50 p-4 rounded text-center">
                     <span class="block text-sm text-blue-600 font-medium mb-1">Новых юзеров за неделю</span>
-                    <span class="text-3xl font-bold text-blue-800">+124</span>
+                    <span class="text-3xl font-bold text-blue-800">+{{ new_users_count }}</span>
                 </div>
                 <div class="bg-green-50 p-4 rounded text-center">
                     <span class="block text-sm text-green-600 font-medium mb-1">Создано тем</span>
-                    <span class="text-3xl font-bold text-green-800">45</span>
+                    <span class="text-3xl font-bold text-green-800">{{ total_topics_count }}</span>
                 </div>
             </div>
         </div>
@@ -48,36 +70,30 @@
     <div class="flex flex-col gap-8">
         
         <div class="bg-white rounded-lg shadow-sm border border-slate-100 p-6 flex-1">
-            <h3 class="text-lg font-bold text-slate-800 mb-4 pb-3 border-b border-slate-100">Назначение ролей</h3>
+            <h3 class="text-lg font-bold text-slate-800 mb-4 pb-3 border-b border-slate-100">Пользователи форума</h3>
             
             <div class="relative mb-4">
                 <input type="text" placeholder="Поиск пользователя по логину..." class="w-full bg-slate-50 border border-slate-200 rounded py-2 px-4 focus:outline-none focus:border-brandBlue focus:ring-1 focus:ring-brandBlue text-sm">
             </div>
 
-            <div class="divide-y divide-slate-100">
+            <div class="divide-y divide-slate-100 max-h-[500px] overflow-y-auto pr-2">
+                {% for user in users %}
                 <div class="py-3 flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Maks" class="w-8 h-8 rounded-full bg-slate-200">
-                        <span class="font-medium text-slate-700">Maks_Frontend</span>
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed={{ user.username }}" class="w-8 h-8 rounded-full bg-slate-200">
+                        <span class="font-medium text-slate-700">{{ user.username }}</span>
                     </div>
-                    <select class="bg-slate-50 border border-slate-200 text-slate-600 text-sm rounded focus:ring-brandBlue focus:border-brandBlue p-1.5 outline-none">
-                        <option value="user">Пользователь</option>
-                        <option value="mod" selected>Модератор</option>
-                        <option value="admin">Администратор</option>
-                    </select>
+                    
+                    <span class="text-[11px] font-bold px-2 py-1 rounded 
+                        {% if user.is_superuser or user.role == 'admin' %}bg-red-50 text-red-600
+                        {% elif user.role == 'mod' %}bg-brandBlue/10 text-brandBlue
+                        {% else %}bg-slate-100 text-slate-600{% endif %} uppercase">
+                        {{ user.get_role_display }}
+                    </span>
                 </div>
-
-                <div class="py-3 flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Anna" class="w-8 h-8 rounded-full bg-slate-200">
-                        <span class="font-medium text-slate-700">Anna_Dev</span>
-                    </div>
-                    <select class="bg-slate-50 border border-slate-200 text-slate-600 text-sm rounded focus:ring-brandBlue focus:border-brandBlue p-1.5 outline-none">
-                        <option value="user" selected>Пользователь</option>
-                        <option value="mod">Модератор</option>
-                        <option value="admin">Администратор</option>
-                    </select>
-                </div>
+                {% empty %}
+                <p class="text-sm text-slate-500 py-2">Пользователей пока нет.</p>
+                {% endfor %}
             </div>
         </div>
 

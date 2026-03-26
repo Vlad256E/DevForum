@@ -7,6 +7,7 @@
 </div>
 
 <div class="flex flex-col gap-8">
+    
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-100 flex flex-col justify-between">
             <div class="flex justify-between items-start text-slate-600 mb-2">
@@ -15,13 +16,14 @@
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
                 </div>
             </div>
-            <span class="text-4xl font-bold text-slate-800">3</span>
+            <span class="text-4xl font-bold text-slate-800">{{ complaints.count }}</span>
         </div>
     </div>
 
     <div>
         <h2 class="text-xl font-semibold text-slate-700 mb-4">Журнал жалоб</h2>
         <div class="bg-white rounded-lg shadow-sm border border-slate-100 overflow-hidden">
+            
             <div class="grid grid-cols-12 gap-4 px-6 py-4 border-b border-slate-100 text-sm font-semibold text-slate-500 bg-slate-50">
                 <div class="col-span-3">Пользователь</div>
                 <div class="col-span-3">Тема</div>
@@ -30,18 +32,36 @@
             </div>
             
             <div class="divide-y divide-slate-100">
+                
+                {% for complaint in complaints %}
                 <div class="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-slate-50 transition">
+                    
                     <div class="col-span-3 flex items-center gap-3">
-                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=User123" class="w-8 h-8 rounded-full bg-slate-200">
-                        <span class="text-slate-700 font-medium">User123</span>
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed={{ complaint.sender.username }}" class="w-8 h-8 rounded-full bg-slate-200">
+                        <span class="text-slate-700 font-medium">{{ complaint.sender.username }}</span>
                     </div>
-                    <div class="col-span-3 text-slate-500 truncate">Оскорбление...</div>
-                    <div class="col-span-4 text-slate-500 text-sm pr-4">Нецензурная лексика в адрес автора темы.</div>
+                    
+                    <div class="col-span-3 text-slate-500 truncate" title="{{ complaint.message.topic.title }}">
+                        {{ complaint.message.topic.title }}
+                    </div>
+                    
+                    <div class="col-span-4 text-slate-500 text-sm pr-4">
+                        {{ complaint.reason }}
+                    </div>
+                    
                     <div class="col-span-2 flex justify-end gap-2">
-                        <button class="bg-[#d9534f] hover:bg-red-700 text-white text-xs font-semibold py-1.5 px-3 rounded transition">УДАЛИТЬ</button>
-                        <button class="bg-[#5c7c94] hover:bg-slate-700 text-white text-xs font-semibold py-1.5 px-3 rounded transition">БАН</button>
+                        <button class="bg-[#d9534f] hover:bg-red-700 text-white text-xs font-semibold py-1.5 px-3 rounded transition" title="Удалить сообщение">УДАЛИТЬ</button>
                     </div>
                 </div>
+                
+                {% empty %}
+                <div class="p-8 text-center text-slate-500 flex flex-col items-center justify-center">
+                    <svg class="w-12 h-12 text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <p class="text-lg font-medium text-slate-600">Нет активных жалоб</p>
+                    <p class="text-sm mt-1 text-slate-400">Отличная работа, на форуме порядок!</p>
+                </div>
+                {% endfor %}
+                
             </div>
         </div>
     </div>

@@ -38,11 +38,11 @@
                 <span class="sidebar-text hidden ml-4 font-semibold whitespace-nowrap">Главная</span>
             </a>
             
-            <a href="{% url 'topic' %}" class="{% if request.resolver_match.url_name == 'topic' %}bg-brandBlue text-white shadow-md{% else %}text-slate-400 hover:text-brandBlue hover:bg-slate-50{% endif %} p-3 rounded-xl flex items-center transition-all cursor-pointer">
+            <a href="{% url 'catalog' %}" class="{% if request.resolver_match.url_name == 'catalog' %}bg-brandBlue text-white shadow-md{% else %}text-slate-400 hover:text-brandBlue hover:bg-slate-50{% endif %} p-3 rounded-xl flex items-center transition-all cursor-pointer">
                 <div class="shrink-0 flex items-center justify-center">
                     <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v1H2V6zM2 9h16v2H2V9zm0 3h16v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"></path></svg>
                 </div>
-                <span class="sidebar-text hidden ml-4 font-semibold whitespace-nowrap">Просмотр темы</span>
+                <span class="sidebar-text hidden ml-4 font-semibold whitespace-nowrap">Каталог</span>
             </a>
 
             <a href="{% url 'messages' %}" class="{% if request.resolver_match.url_name == 'messages' %}bg-brandBlue text-white shadow-md{% else %}text-slate-400 hover:text-brandBlue hover:bg-slate-50{% endif %} p-3 rounded-xl flex items-center transition-all cursor-pointer relative">
@@ -63,12 +63,17 @@
                 <span class="sidebar-text hidden ml-4 font-semibold whitespace-nowrap">Дашборд модератора</span>
             </a>
 
+            {% if request.user.is_superuser or request.user.role == 'admin' %}
             <a href="{% url 'admin_panel' %}" class="{% if request.resolver_match.url_name == 'admin_panel' %}bg-brandBlue text-white shadow-md{% else %}text-slate-400 hover:text-brandBlue hover:bg-slate-50{% endif %} p-3 rounded-xl flex items-center transition-all cursor-pointer">
                 <div class="shrink-0 flex items-center justify-center">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
                 </div>
                 <span class="sidebar-text hidden ml-4 font-semibold whitespace-nowrap">Админ-панель</span>
             </a>
+            {% endif %}
             
         </nav>
     </aside>
@@ -76,90 +81,91 @@
     <div class="flex-1 flex flex-col overflow-hidden">
         
         <header class="bg-white h-20 flex items-center justify-between px-8 shadow-sm z-10 flex-shrink-0">
-            <div class="flex items-center gap-2">
+            <a href="{% url 'home' %}" class="flex items-center gap-2 hover:opacity-80 transition cursor-pointer">
                 <span class="text-xl font-black text-brandBlue tracking-wide">DEVHUB</span>
                 <span class="text-xl font-semibold text-slate-700">форум</span>
-            </div>
+            </a>
 
-            <div class="w-[400px] relative hidden md:block">
-                <input type="text" placeholder="Поиск..." class="w-full bg-slate-50 border border-slate-200 text-slate-600 rounded-lg py-2.5 px-4 focus:outline-none focus:ring-2 focus:ring-brandBlue/50 transition">
-                <svg class="w-5 h-5 text-slate-400 absolute right-3 top-3 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <div class="w-full max-w-[600px] mx-8 relative hidden md:block">
+                <input type="text" placeholder="Поиск по форуму..." class="w-full bg-slate-50 border border-slate-200 text-slate-600 rounded-lg py-2.5 px-4 focus:outline-none focus:ring-2 focus:ring-brandBlue/50 transition">
+                <svg class="w-5 h-5 text-slate-400 absolute right-3 top-3 cursor-pointer hover:text-brandBlue transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
             </div>
 
             <div class="relative group cursor-pointer flex items-center gap-3 py-2">
-    
-    {% if request.user.is_authenticated %}
-        <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden border border-slate-300">
-            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed={{ request.user.username }}" alt="Avatar" class="w-full h-full object-cover">
-        </div>
-        <div class="flex flex-col">
-            <span class="text-sm text-slate-500 leading-none">Привет,</span>
-            <div class="flex items-center gap-2">
-                <span class="font-bold text-slate-700 leading-tight">{{ request.user.username }}</span>
-                <span class="text-[10px] font-bold bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded">USER</span>
-            </div>
-        </div>
-        <svg class="w-4 h-4 text-slate-400 ml-1 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                {% if request.user.is_authenticated %}
+                    <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden border border-slate-300">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed={{ request.user.username }}" alt="Avatar" class="w-full h-full object-cover">
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-sm text-slate-500 leading-none">Привет,</span>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-slate-700 leading-tight">{{ request.user.username }}</span>
+                            <span class="text-[10px] font-bold bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded uppercase">
+                                {% if request.user.is_superuser %}Админ{% elif request.user.is_staff %}Модер{% else %}User{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    <svg class="w-4 h-4 text-slate-400 ml-1 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
 
-        <div class="absolute right-0 top-full mt-1 w-64 bg-white rounded-lg shadow-lg border border-slate-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
-            <div class="px-5 py-4 bg-slate-50 border-b border-slate-100">
-                <p class="text-xs text-slate-500 mb-1 uppercase tracking-wider font-semibold">Ваш статус</p>
-                <div class="flex items-center justify-between">
-                    <span class="font-bold text-brandBlue text-md">Участник форума</span>
-                    <span class="text-xs font-bold bg-blue-100 text-blue-600 px-2 py-1 rounded-full">54 pts</span>
-                </div>
-                <div class="w-full bg-slate-200 rounded-full h-1.5 mt-3">
-                    <div class="bg-brandBlue h-1.5 rounded-full" style="width: 54%"></div>
-                </div>
-                <p class="text-[10px] text-slate-400 mt-1 text-right">46 очков до "Опытный"</p>
-            </div>
+                    <div class="absolute right-0 top-full mt-1 w-64 bg-white rounded-lg shadow-lg border border-slate-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
+                        
+                        <div class="px-5 py-4 bg-slate-50 border-b border-slate-100">
+                            <p class="text-xs text-slate-500 mb-1 uppercase tracking-wider font-semibold">Ваш статус</p>
+                            <div class="flex items-center justify-between">
+                                <span class="font-bold text-brandBlue text-md">{{ request.user.profile.status|default:"Участник форума" }}</span>
+                                <span class="text-xs font-bold bg-blue-100 text-blue-600 px-2 py-1 rounded-full">{{ request.user.profile.reputation|default:"0" }} pts</span>
+                            </div>
+                            <div class="w-full bg-slate-200 rounded-full h-1.5 mt-3">
+                                <div class="bg-brandBlue h-1.5 rounded-full" style="width: {{ request.user.profile.progress_percentage|default:'0' }}%"></div>
+                            </div>
+                            <p class="text-[10px] text-slate-400 mt-1 text-right">{{ request.user.profile.points_to_next_level|default:"0" }} очков до следующего уровня</p>
+                        </div>
 
-            <div class="py-2 flex flex-col">
-                <a href="{% url 'profile' %}" class="px-5 py-2.5 text-[15px] text-slate-700 hover:text-brandBlue hover:bg-slate-50 transition flex items-center gap-2">
-                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                    Личный кабинет
-                </a>
-                <a href="#" class="px-5 py-2.5 text-[15px] text-slate-700 hover:text-brandBlue hover:bg-slate-50 transition flex items-center gap-2">
-                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                    Мои темы
-                </a>
-                
-                <div class="border-t border-slate-100 my-1"></div>
-                
-                <a href="{% url 'logout' %}" class="flex items-center gap-2 px-5 py-2 text-[15px] text-red-500 hover:bg-red-50 transition">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                    Выход
-                </a>
-            </div>
-        </div>
+                        <div class="py-2 flex flex-col">
+                            <a href="{% url 'profile' %}" class="px-5 py-2.5 text-[15px] text-slate-700 hover:text-brandBlue hover:bg-slate-50 transition flex items-center gap-2">
+                                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                Личный кабинет
+                            </a>
+                            <a href="#" class="px-5 py-2.5 text-[15px] text-slate-700 hover:text-brandBlue hover:bg-slate-50 transition flex items-center gap-2">
+                                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                                Мои темы
+                            </a>
+                            
+                            <div class="border-t border-slate-100 my-1"></div>
+                            
+                            <a href="{% url 'logout' %}" class="flex items-center gap-2 px-5 py-2 text-[15px] text-red-500 hover:bg-red-50 transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                                Выход
+                            </a>
+                        </div>
+                    </div>
 
-    {% else %}
-        <div class="w-10 h-10 rounded-full bg-slate-100 overflow-hidden border border-slate-200 flex items-center justify-center text-slate-400">
-            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
-        </div>
-        <div class="flex flex-col">
-            <span class="text-sm text-slate-500 leading-none">Добро пожаловать,</span>
-            <div class="flex items-center gap-2">
-                <span class="font-bold text-slate-700 leading-tight">Гость</span>
-            </div>
-        </div>
-        <svg class="w-4 h-4 text-slate-400 ml-1 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                {% else %}
+                    <div class="w-10 h-10 rounded-full bg-slate-100 overflow-hidden border border-slate-200 flex items-center justify-center text-slate-400">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-sm text-slate-500 leading-none">Добро пожаловать,</span>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-slate-700 leading-tight">Гость</span>
+                        </div>
+                    </div>
+                    <svg class="w-4 h-4 text-slate-400 ml-1 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
 
-        <div class="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-slate-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
-            <div class="py-2 flex flex-col">
-                <a href="{% url 'login' %}" class="px-5 py-2.5 text-[15px] text-slate-700 hover:text-brandBlue hover:bg-slate-50 transition flex items-center gap-2">
-                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
-                    Войти
-                </a>
-                <a href="{% url 'register' %}" class="px-5 py-2.5 text-[15px] text-slate-700 hover:text-brandBlue hover:bg-slate-50 transition flex items-center gap-2">
-                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
-                    Регистрация
-                </a>
+                    <div class="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-slate-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
+                        <div class="py-2 flex flex-col">
+                            <a href="{% url 'login' %}" class="px-5 py-2.5 text-[15px] text-slate-700 hover:text-brandBlue hover:bg-slate-50 transition flex items-center gap-2">
+                                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+                                Войти
+                            </a>
+                            <a href="{% url 'register' %}" class="px-5 py-2.5 text-[15px] text-slate-700 hover:text-brandBlue hover:bg-slate-50 transition flex items-center gap-2">
+                                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
+                                Регистрация
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
             </div>
-        </div>
-    {% endif %}
-    
-</div>
         </header>
 
         <main class="flex-1 overflow-x-hidden overflow-y-auto p-8">

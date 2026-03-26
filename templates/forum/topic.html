@@ -1,95 +1,86 @@
 {% extends "base.html" %}
 
-{% block title %}Название темы - DEVHUB{% endblock %}
+{% block title %}{{ topic.title }} - DEVHUB{% endblock %}
 
 {% block content %}
 <div class="text-sm text-brandBlue mb-6 flex items-center gap-2">
-    <a href="/" class="hover:underline">Главная</a>
+    <a href="{% url 'home' %}" class="hover:underline">Главная</a>
     <span class="text-slate-400">/</span>
-    <a href="#" class="hover:underline">Программирование</a>
+    <span class="text-slate-600 cursor-default">{{ topic.category.name }}</span>
     <span class="text-slate-400">/</span>
-    <span class="text-slate-600">Название темы</span>
+    <span class="text-slate-600 font-medium">{{ topic.title }}</span>
 </div>
 
 <div class="flex flex-col lg:flex-row gap-8">
     
     <div class="flex-1 flex flex-col gap-6">
         
+        <h1 class="text-2xl font-bold text-slate-800 mb-2">{{ topic.title }}</h1>
+        
+        {% for msg in forum_messages %}
         <div class="bg-white rounded-lg shadow-sm border border-slate-100 p-6 relative">
-            <button class="absolute top-6 right-6 text-slate-400 hover:text-slate-600">
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"></path></svg>
-            </button>
-
-            <h1 class="text-2xl font-bold text-slate-800 mb-6">Название темы</h1>
             
-            <div class="flex items-center gap-4 mb-6">
-                <div class="w-12 h-12 rounded-full bg-slate-200 overflow-hidden">
-                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=CodePro" alt="Avatar" class="w-full h-full object-cover">
-                </div>
-                <div>
-                    <div class="font-bold text-slate-700 text-lg">CodePro</div>
-                    <div class="text-sm text-slate-500">Пост от: 2 часа назад</div>
-                </div>
-            </div>
-
-            <div class="text-slate-700 mb-6 leading-relaxed">
-                <p class="mb-4">Текст темы. Здесь автор описывает свою проблему, делится мыслями или задаёт вопрос сообществу.</p>
-                
-                <div class="bg-slate-100 rounded-md p-4 font-mono text-sm text-slate-600 border border-slate-200">
-                    Пример кода<br>
-                    <span class="text-brandBlue">def</span> <span class="text-purple-600">hello_world</span>():<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp;print(<span class="text-green-600">"Привет, DEVHUB!"</span>)
-                </div>
-            </div>
-
-            <div class="flex items-center gap-3">
-                <button class="bg-brandBlue hover:bg-blue-800 text-white font-semibold py-2 px-6 rounded shadow-sm transition">
-                    ОТВЕТИТЬ
-                </button>
-                <button class="bg-white hover:bg-slate-50 text-slate-600 font-semibold py-2 px-6 rounded border border-slate-200 shadow-sm transition">
-                    ПОДЕЛИТЬСЯ
-                </button>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-lg shadow-sm border border-slate-100 p-6 relative">
-            <button class="absolute top-6 right-6 text-slate-400 hover:text-slate-600">
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"></path></svg>
+            {% if request.user == msg.author or request.user.role in 'admin,mod' or request.user.is_superuser %}
+            <button class="absolute top-6 right-6 text-slate-400 hover:text-red-500 transition" title="Удалить сообщение">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
             </button>
+            {% endif %}
 
             <div class="flex items-center gap-4 mb-4">
-                <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
-                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=PythonGuru" alt="Avatar" class="w-full h-full object-cover">
+                <div class="w-12 h-12 rounded-full bg-slate-200 overflow-hidden shrink-0 border border-slate-200">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed={{ msg.author.username }}" alt="Avatar" class="w-full h-full object-cover">
                 </div>
                 <div>
-                    <div class="font-bold text-slate-700">PythonGuru</div>
-                    <div class="text-sm text-slate-500">Пример ответа</div>
+                    <div class="font-bold text-slate-700 text-lg flex items-center gap-2">
+                        {{ msg.author.username }}
+                        
+                        {% if msg.author.role == 'admin' or msg.author.is_superuser %}
+                            <span class="text-[10px] bg-red-50 text-red-500 px-2 py-0.5 rounded uppercase tracking-wide">Админ</span>
+                        {% elif msg.author.role == 'mod' %}
+                            <span class="text-[10px] bg-blue-50 text-brandBlue px-2 py-0.5 rounded uppercase tracking-wide">Модератор</span>
+                        {% endif %}
+                    </div>
+                    <div class="text-sm text-slate-500">{{ msg.posted_at|date:"d E Y, H:i" }}</div>
                 </div>
             </div>
-            <div class="text-slate-700">
-                <p>Привет! Попробуй использовать виртуальное окружение, это должно решить твою проблему с зависимостями.</p>
+
+            <div class="text-slate-700 mb-2 leading-relaxed whitespace-pre-wrap">{{ msg.text }}</div>
+
+            <div class="flex items-center gap-3 mt-4 pt-4 border-t border-slate-50">
+                <button class="text-sm font-semibold text-slate-500 hover:text-brandBlue transition flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
+                    Ответить
+                </button>
+                {% if request.user.is_authenticated and request.user != msg.author %}
+                <button class="text-sm font-semibold text-slate-400 hover:text-red-500 transition flex items-center gap-1 ml-auto">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    Пожаловаться
+                </button>
+                {% endif %}
             </div>
         </div>
+        {% empty %}
+        <div class="bg-white rounded-lg shadow-sm border border-slate-100 p-10 text-center text-slate-500">
+            <p class="text-lg font-medium">В этой теме пока нет сообщений.</p>
+            <p class="text-sm mt-1">Будьте первым, кто оставит свой след!</p>
+        </div>
+        {% endfor %}
 
+        {% if request.user.is_authenticated %}
         <div class="bg-white rounded-lg shadow-sm border border-slate-100 p-6 mt-4">
-            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Ответ</h3>
+            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Ваш ответ</h3>
             
-            <form>
+            <form action="" method="POST">
+                {% csrf_token %}
                 <div class="bg-slate-50 border border-slate-200 border-b-0 rounded-t-lg p-2 flex gap-1 items-center">
                     <button type="button" class="p-1.5 text-slate-500 hover:bg-slate-200 hover:text-slate-800 rounded font-bold transition">B</button>
                     <button type="button" class="p-1.5 text-slate-500 hover:bg-slate-200 hover:text-slate-800 rounded italic transition text-lg leading-none">I</button>
                     <button type="button" class="p-1.5 text-slate-500 hover:bg-slate-200 hover:text-slate-800 rounded underline transition">U</button>
                     <span class="w-px h-5 bg-slate-300 mx-1"></span>
                     <button type="button" class="p-1.5 text-slate-500 hover:bg-slate-200 hover:text-slate-800 rounded transition font-mono">&lt;/&gt;</button>
-                    <button type="button" class="p-1.5 text-slate-500 hover:bg-slate-200 hover:text-slate-800 rounded transition">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
-                    </button>
-                    <button type="button" class="p-1.5 text-slate-500 hover:bg-slate-200 hover:text-slate-800 rounded transition">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
-                    </button>
                 </div>
                 
-                <textarea rows="4" class="w-full border border-slate-200 rounded-b-lg p-4 focus:outline-none focus:ring-1 focus:ring-brandBlue focus:border-brandBlue resize-y bg-slate-50/50" placeholder="Напишите ваш ответ..."></textarea>
+                <textarea name="text" rows="4" required class="w-full border border-slate-200 rounded-b-lg p-4 focus:outline-none focus:ring-1 focus:ring-brandBlue focus:border-brandBlue resize-y bg-slate-50/50" placeholder="Напишите ваш ответ..."></textarea>
                 
                 <div class="mt-4 flex justify-end">
                     <button type="submit" class="bg-brandBlue hover:bg-blue-800 text-white font-semibold py-2 px-8 rounded shadow-sm transition">
@@ -98,29 +89,43 @@
                 </div>
             </form>
         </div>
+        {% else %}
+        <div class="bg-slate-50 rounded-lg border border-slate-200 p-6 mt-4 text-center">
+            <p class="text-slate-600 mb-4">Только авторизованные пользователи могут оставлять сообщения.</p>
+            <a href="{% url 'login' %}" class="inline-block bg-brandBlue hover:bg-blue-800 text-white font-semibold py-2 px-6 rounded shadow-sm transition">Войти на сайт</a>
+        </div>
+        {% endif %}
 
     </div>
 
-    <div class="w-full lg:w-72">
+    <div class="w-full lg:w-72 flex flex-col gap-6">
         
         <div class="bg-white rounded-lg shadow-sm border border-slate-100 p-6">
             <h3 class="text-lg font-bold text-slate-800 mb-6 pb-4 border-b border-slate-100">Информация о теме</h3>
             
             <div class="flex justify-around mb-6 text-center">
                 <div>
-                    <span class="block text-2xl font-bold text-slate-700">54</span>
-                    <span class="text-xs text-slate-400 uppercase">Total Posts</span>
+                    <span class="block text-2xl font-bold text-brandBlue">{{ forum_messages.count }}</span>
+                    <span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Сообщений</span>
                 </div>
-                <div class="w-px bg-slate-200"></div>
+                <div class="w-px bg-slate-100"></div>
                 <div>
-                    <span class="block text-2xl font-bold text-slate-700">20</span>
-                    <span class="text-xs text-slate-400 uppercase">Liked Posts</span>
+                    <span class="block text-2xl font-bold text-slate-700">{{ topic.created_at|date:"d.m" }}</span>
+                    <span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Создана</span>
                 </div>
             </div>
             
-            <button class="w-full bg-[#5c7c94] hover:bg-slate-700 text-white font-semibold py-2.5 rounded shadow-sm transition">
-                МОДЕРАЦИЯ
+            <div class="text-sm text-slate-500 bg-slate-50 p-3 rounded mb-6 text-center border border-slate-100">
+                Автор темы:<br>
+                <span class="font-bold text-slate-700">{{ topic.author.username }}</span>
+            </div>
+            
+            {% if request.user.role in 'admin,mod' or request.user.is_superuser %}
+            <button class="w-full bg-[#5c7c94] hover:bg-slate-700 text-white font-semibold py-2.5 rounded shadow-sm transition flex justify-center items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                УПРАВЛЕНИЕ ТЕМОЙ
             </button>
+            {% endif %}
         </div>
 
     </div>
