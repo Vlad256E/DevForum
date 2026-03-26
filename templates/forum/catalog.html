@@ -3,9 +3,15 @@
 {% block title %}Каталог разделов - DEVHUB{% endblock %}
 
 {% block content %}
-<div class="mb-6 mt-2">
+<div class="text-sm text-brandBlue mb-6 flex items-center gap-2">
+    <a href="{% url 'home' %}" class="hover:underline transition">Главная</a>
+    <span class="text-slate-400">/</span>
+    <span class="text-slate-600 font-medium">Каталог</span>
+</div>
+
+<div class="mb-8">
     <h1 class="text-3xl font-bold text-slate-800 tracking-tight">Каталог разделов</h1>
-    <p class="text-slate-500 mt-1">Выберите интересующую вас категорию для просмотра всех тем</p>
+    <p class="text-slate-500 mt-2">Выберите интересующую вас категорию для просмотра всех тем. Здесь собраны все обсуждения нашего сообщества.</p>
 </div>
 
 <div class="flex flex-wrap items-center justify-between mb-8 gap-4">
@@ -14,7 +20,6 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             Новое
         </button>
-        
         <button class="bg-white text-slate-600 hover:bg-slate-50 font-medium px-4 py-2 rounded flex items-center gap-2 border border-slate-200 shadow-sm transition">
             <svg class="w-5 h-5 text-slate-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"></path></svg>
             Популярное
@@ -22,46 +27,37 @@
     </div>
     
     {% if request.user.is_authenticated %}
-    <button class="bg-brandBlue hover:bg-blue-800 text-white font-semibold py-2.5 px-6 rounded shadow-md transition flex items-center gap-2">
+    <a href="{% url 'create_topic' %}" class="bg-brandBlue hover:bg-blue-800 text-white font-semibold py-2.5 px-6 rounded shadow-md transition flex items-center gap-2">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
         СОЗДАТЬ ТЕМУ
-    </button>
+    </a>
     {% endif %}
 </div>
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
-    {% for category in popular_categories %}
-    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col justify-between cursor-pointer hover:shadow-md hover:border-brandBlue/30 transition-all group">
+    {% for category in categories %}
+    <a href="{% url 'category_detail' category.id %}" class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col justify-between cursor-pointer hover:shadow-md hover:border-brandBlue/30 transition-all group">
         <div class="flex justify-between items-start">
             <h3 class="font-bold text-slate-800 text-lg group-hover:text-brandBlue transition">{{ category.name }}</h3>
             <div class="p-2 bg-blue-50 rounded-lg text-brandBlue">
-                {{ category.icon_svg|safe|default:"<svg class='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 6h16M4 10h16M4 14h16M4 18h16'></path></svg>" }}
+                <svg class='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 6h16M4 10h16M4 14h16M4 18h16'></path></svg>
             </div>
         </div>
+        {% if category.description %}
+            <p class="text-sm text-slate-500 mt-2 line-clamp-2">{{ category.description }}</p>
+        {% endif %}
         <div class="flex gap-4 mt-6 text-sm text-slate-400">
-            <span><b>{{ category.topics_count|default:"0" }}</b> тем</span>
-            <span><b>{{ category.posts_count|default:"0" }}</b> сообщ.</span>
+            <span><b>{{ category.topics.count }}</b> тем</span>
         </div>
-    </div>
+    </a>
     {% empty %}
     <div class="col-span-full bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden min-h-[200px] flex flex-col justify-center items-center text-center p-10">
         <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
             <svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
         </div>
         <h3 class="text-lg font-medium text-slate-400">Категорий пока нет</h3>
-        <p class="text-slate-400 text-sm max-w-xs mt-1">Скоро администратор добавит новые разделы для общения!</p>
+        <p class="text-slate-400 text-sm max-w-xs mt-1">Администратор скоро добавит новые разделы!</p>
     </div>
     {% endfor %}
 </div>
 {% endblock %}
-
-<div class="text-sm text-brandBlue mb-6 flex items-center gap-2">
-    <a href="{% url 'home' %}" class="hover:underline transition">Главная</a>
-    <span class="text-slate-400">/</span>
-    <span class="text-slate-600 font-medium">{{ category.name|default:"Название категории" }}</span>
-</div>
-
-<div class="mb-8">
-    <h1 class="text-3xl font-bold text-slate-800 tracking-tight">{{ category.name|default:"Название категории" }}</h1>
-    <p class="text-slate-500 mt-2">{{ category.description|default:"Описание этого раздела форума. Здесь обсуждают самые важные и интересные вопросы по данной теме." }}</p>
-</div>

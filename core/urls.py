@@ -2,23 +2,24 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import TemplateView
 from django.contrib.auth.views import LogoutView
-from forum.views import catalog_view, category_detail_view, create_topic_view 
-from users.views import register_view, login_view, profile_view
 
-# Импорты из приложения forum
+# Группируем импорты из приложения forum
 from forum.views import (
     home_view, 
+    catalog_view, 
+    category_detail_view, 
+    create_topic_view, 
+    topic_view,
+    dashboard_view,
     admin_panel_view, 
     add_category, 
-    delete_category, 
-    dashboard_view, 
-    topic_view,
-    catalog_view,
-    category_detail_view
+    delete_category,
+    team_view, 
+    rules_view
 )
 
-# Импорты из приложения users
-from users.views import register_view, login_view
+# Группируем импорты из приложения users
+from users.views import register_view, login_view, profile_view
 
 urlpatterns = [
     # 1. Служебные пути
@@ -29,9 +30,13 @@ urlpatterns = [
     path('', home_view, name='home'),
 
     # 3. Форум и модерация
-    path('dashboard/', dashboard_view, name='dashboard'),
+    path('catalog/', catalog_view, name='catalog'),
+    path('category/<int:category_id>/', category_detail_view, name='category_detail'),
+    path('topic/create/', create_topic_view, name='create_topic'), 
     path('topic/<int:topic_id>/', topic_view, name='topic'),
-    path('messages/', TemplateView.as_view(template_name='forum/messages.html'), name='messages'), # Пока остается статичным HTML
+    path('dashboard/', dashboard_view, name='dashboard'),
+    # Пока остается статичным HTML
+    path('messages/', TemplateView.as_view(template_name='forum/messages.html'), name='messages'), 
 
     # 4. Внутренняя Админ-панель на сайте
     path('admin-panel/', admin_panel_view, name='admin_panel'),
@@ -44,8 +49,6 @@ urlpatterns = [
     path('register/', register_view, name='register'),
     path('logout/', LogoutView.as_view(next_page='home'), name='logout'),
 
-    path('catalog/', catalog_view, name='catalog'),
-    path('category/<int:category_id>/', category_detail_view, name='category_detail'),
-
-    path('topic/create/', create_topic_view, name='create_topic'), 
+    path('team/', team_view, name='team'),
+    path('rules/', rules_view, name='rules'),
 ]

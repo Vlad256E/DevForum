@@ -103,3 +103,9 @@ def category_detail_view(request, category_id):
     # Получаем все темы этой категории, сортируем от новых к старым
     topics = category.topics.all().order_by('-created_at') 
     return render(request, 'forum/category_detail.html', {'category': category, 'topics': topics})
+
+def team_view(request):
+    return render(request, 'forum/team.html')
+
+def rules_view(request):
+    return render(request, 'forum/rules.html')
