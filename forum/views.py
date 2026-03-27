@@ -373,24 +373,24 @@ def resolve_complaint(request, complaint_id, action):
         messages.info(request, 'Жалоба отклонена.')
         
     elif action == 'penalize':
-        # Получаем тип штрафа из формы
+        # Получаем тип штрафа из выпадающего списка
         penalty_type = request.POST.get('penalty_type')
         points_to_deduct = 0
         
-        # Назначаем баллы по стратегии наказаний
+        # Сверяем со стратегией наказаний
         if penalty_type == 'flood':
-            points_to_deduct = 10 # [cite: 96]
+            points_to_deduct = 10
         elif penalty_type == 'insult':
-            points_to_deduct = 15 # [cite: 97]
+            points_to_deduct = 15
         elif penalty_type == 'spam':
-            points_to_deduct = 50 # [cite: 98]
+            points_to_deduct = 50
 
         if points_to_deduct > 0:
             author = complaint.message.author
             author.reputation -= points_to_deduct
             author.save()
             complaint.message.delete() # Каскадно удалит и саму жалобу
-            messages.success(request, f'Пользователь {author.username} оштрафован на {points_to_deduct} очков. Сообщение удалено.')
+            messages.success(request, f'Нарушитель оштрафован на {points_to_deduct} очков. Сообщение удалено.')
 
     return redirect('dashboard')
 
