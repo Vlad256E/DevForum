@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Мои темы - DEVHUB{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-slate-800">Мои темы</h1>
+        <p class="text-slate-500 mt-2">Список всех обсуждений, которые вы создали.</p>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+        <div class="divide-y divide-slate-100">
+            {% for topic in topics %}
+            <a href="{% url 'topic' topic.id %}" class="grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-5 items-center hover:bg-slate-50 transition group block">
+                <div class="col-span-8">
+                    <h3 class="font-bold text-slate-800 text-base group-hover:text-brandBlue transition mb-1">{{ topic.title }}</h3>
+                    <div class="flex items-center gap-2 text-xs text-slate-500">
+                        <span class="bg-slate-100 px-2 py-0.5 rounded">{{ topic.category.name }}</span>
+                        <span>•</span>
+                        <span>{{ topic.created_at|date:"d.m.Y, H:i" }}</span>
+                    </div>
+                </div>
+                <div class="col-span-4 text-right text-sm text-slate-500 md:block hidden">
+                    Ответов: <b>{{ topic.messages.count }}</b>
+                </div>
+            </a>
+            {% empty %}
+            <div class="p-12 text-center flex flex-col items-center justify-center">
+                <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+                    <svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                </div>
+                <h3 class="text-lg font-medium text-slate-600">Вы пока не создали ни одной темы</h3>
+                <a href="{% url 'create_topic' %}" class="mt-4 text-brandBlue font-bold hover:underline">Создать первую тему</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

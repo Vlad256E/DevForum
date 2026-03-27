@@ -50,7 +50,14 @@
                     </div>
                     
                     <div class="col-span-2 flex justify-end gap-2">
-                        <button class="bg-[#d9534f] hover:bg-red-700 text-white text-xs font-semibold py-1.5 px-3 rounded transition" title="Удалить сообщение">УДАЛИТЬ</button>
+                        <form action="{% url 'resolve_complaint' complaint.id 'reject' %}" method="POST">
+                            {% csrf_token %}
+                            <button type="submit" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold py-1.5 px-3 rounded transition" title="Отклонить жалобу">ОТКЛОНИТЬ</button>
+                        </form>
+                        <form action="{% url 'resolve_complaint' complaint.id 'delete' %}" method="POST">
+                            {% csrf_token %}
+                            <button type="submit" class="bg-[#d9534f] hover:bg-red-700 text-white text-xs font-semibold py-1.5 px-3 rounded transition" title="Удалить сообщение">УДАЛИТЬ</button>
+                        </form>
                     </div>
                 </div>
                 

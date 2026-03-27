@@ -358,3 +358,29 @@ def delete_topic_view(request, topic_id):
         return redirect('category_detail', category_id=category_id)
         
     return HttpResponseForbidden("Метод не поддерживается")
+
+@user_passes_test(is_moderator)
+def resolve_complaint(request, complaint_id, action):
+    complaint = get_object_or_404(Complaint, id=complaint_id)
+    if action == 'delete':
+        complaint.message.delete() # Каскадно удалит и саму жалобу
+        messages.success(request, 'Сообщение успешно удалено.')
+    elif action == 'reject':
+        complaint.status = 'rejected'
+        complaint.save()
+        messages.info(request, 'Жалоба отклонена.')
+    return redirect('dashboard')
+
+@login_required
+def delete_dialog(request, dialog_id):
+    dialog = get_object_or_404(Dialog, id=dialog_id)
+    # Проверяем, что юзер действительно состоит в этом диалоге
+    if request.user in dialog.participants.all():
+        dialog.delete()
+        messages.success(request, 'Диалог удален.')
+    return redirect('messages')
+
+@login_required
+def my_topics_view(request):
+    topics = Topic.objects.filter(author=request.user).order_by('-created_at')
+    return render(request, 'forum/my_topics.html', {'topics': topics})

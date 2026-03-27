@@ -3,6 +3,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth.views import LogoutView
+from forum.views import resolve_complaint
 
 # Импорты из приложения users
 from users.views import (
@@ -10,7 +11,7 @@ from users.views import (
     login_view, 
     profile_view, 
     toggle_block_user, 
-    update_avatar
+    update_avatar,
 )
 
 # Импорты из приложения forum
@@ -39,7 +40,9 @@ from forum.views import (
     delete_user_view,
     mark_as_helpful,
     report_message,
-    delete_topic_view
+    delete_topic_view, 
+    delete_dialog,
+    my_topics_view,
 )
 
 urlpatterns = [
@@ -94,6 +97,10 @@ urlpatterns = [
     path('rules/', rules_view, name='rules'),
     path('message/helpful/<int:message_id>/', mark_as_helpful, name='mark_helpful'),
     path('message/like/<int:message_id>/', toggle_like_message, name='toggle_like'),
+    path('messages/<int:dialog_id>/delete/', delete_dialog, name='delete_dialog'),
+
+    path('dashboard/complaint/<int:complaint_id>/<str:action>/', resolve_complaint, name='resolve_complaint'),
+    path('profile/my-topics/', my_topics_view, name='my_topics'),
 ]
 
 # Подключение медиа-файлов (аватарок) в режиме отладки

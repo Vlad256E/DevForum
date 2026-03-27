@@ -23,7 +23,9 @@
 
         <div class="flex-1 overflow-y-auto divide-y divide-slate-100">
             {% for dialog in dialogs %}
-                <a href="{% url 'messages_with_id' dialog.id %}" class="p-4 flex items-center gap-3 hover:bg-slate-50 cursor-pointer transition {% if active_dialog.id == dialog.id %}bg-blue-50 border-l-4 border-brandBlue{% endif %} block">
+            <div class="flex items-center hover:bg-slate-50 transition {% if active_dialog.id == dialog.id %}bg-blue-50 border-l-4 border-brandBlue{% endif %} relative group">
+                
+                <a href="{% url 'messages_with_id' dialog.id %}" class="p-4 flex items-center gap-3 flex-1 min-w-0">
                     <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden shrink-0 border border-slate-100">
                         {% if dialog.other_user.avatar %}
                             <img src="{{ dialog.other_user.avatar.url }}" class="w-full h-full object-cover">
@@ -41,6 +43,16 @@
                         <p class="text-xs text-slate-500 truncate">{{ dialog.last_message.text|default:"Нет сообщений" }}</p>
                     </div>
                 </a>
+
+                <div class="absolute right-4 top-1/2 -translate-y-1/2 hidden group-hover:block z-20">
+                    <form action="{% url 'delete_dialog' dialog.id %}" method="POST" onsubmit="return confirm('Удалить этот чат?');">
+                        {% csrf_token %}
+                        <button type="submit" class="p-2 bg-white shadow-md border border-slate-200 text-red-500 hover:bg-red-50 rounded-full transition" title="Удалить чат">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </form>
+                </div>
+            </div>
             {% empty %}
                 <div class="h-full flex flex-col items-center justify-center text-center p-6 text-slate-400 text-sm">
                     У вас пока нет активных диалогов.
