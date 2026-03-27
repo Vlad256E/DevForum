@@ -16,16 +16,15 @@
 
 <div class="flex flex-wrap items-center justify-between mb-8 gap-4">
     <div class="flex gap-2">
-        <button class="bg-white text-slate-600 hover:bg-slate-50 font-medium px-4 py-2 rounded flex items-center gap-2 border border-slate-200 shadow-sm transition">
+        <a href="?sort=new" class="{% if request.GET.sort != 'popular' %}bg-white shadow-sm border-slate-200{% else %}bg-slate-50 border-transparent text-slate-500 hover:bg-slate-100{% endif %} text-slate-600 font-medium px-4 py-2 rounded flex items-center gap-2 border transition cursor-pointer">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             Новое
-        </button>
-        <button class="bg-white text-slate-600 hover:bg-slate-50 font-medium px-4 py-2 rounded flex items-center gap-2 border border-slate-200 shadow-sm transition">
-            <svg class="w-5 h-5 text-slate-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"></path></svg>
+        </a>
+        <a href="?sort=popular" class="{% if request.GET.sort == 'popular' %}bg-white shadow-sm border-slate-200{% else %}bg-slate-50 border-transparent text-slate-500 hover:bg-slate-100{% endif %} text-slate-600 font-medium px-4 py-2 rounded flex items-center gap-2 border transition cursor-pointer">
+            <svg class="w-5 h-5 {% if request.GET.sort != 'popular' %}text-slate-400{% endif %}" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"></path></svg>
             Популярное
-        </button>
+        </a>
     </div>
-    
 </div>
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
@@ -41,7 +40,7 @@
             <p class="text-sm text-slate-500 mt-2 line-clamp-2">{{ category.description }}</p>
         {% endif %}
         <div class="flex gap-4 mt-6 text-sm text-slate-400">
-            <span><b>{{ category.topics.count }}</b> тем</span>
+            <span><b>{{ category.topic_count|default:category.topics.count }}</b> тем</span>
         </div>
     </a>
     {% empty %}

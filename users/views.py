@@ -71,7 +71,23 @@ def login_view(request):
 
 @login_required
 def profile_view(request):
-    # Считаем реальное количество созданных тем и сообщений пользователя
+    if request.method == 'POST':
+        new_username = request.POST.get('username')
+        new_email = request.POST.get('email')
+        # Чекбокс передает значение 'on', если он активен
+        email_notif = request.POST.get('email_notifications') == 'on' 
+
+        # Проверка: если логин изменился, не занят ли он кем-то другим?
+        if new_username != request.user.username and User.objects.filter(username=new_username).exists():
+            messages.error(request, 'Пользователь с таким логином уже существует.')
+        else:
+            request.user.username = new_username
+            request.user.email = new_email
+            request.user.email_notifications = email_notif
+            request.user.save()
+            messages.success(request, 'Профиль успешно обновлен!')
+            return redirect('profile')
+
     user_topics_count = Topic.objects.filter(author=request.user).count()
     user_replies_count = ForumMessage.objects.filter(author=request.user).count()
     
@@ -95,3 +111,11 @@ def toggle_block_user(request, user_id):
             
     # Возвращаем пользователя на ту же страницу, откуда он нажал кнопку
     return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+
+@login_required
+def update_avatar(request):
+    if request.method == 'POST' and request.FILES.get('avatar'):
+        # Удаляем старую аватарку из памяти, если нужно (опционально)
+        request.user.avatar = request.FILES['avatar']
+        request.user.save()
+    return redirect('profile') # Укажи здесь name твоего URL личного кабинета

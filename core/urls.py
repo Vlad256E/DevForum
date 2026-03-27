@@ -2,8 +2,10 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import TemplateView
 from django.contrib.auth.views import LogoutView
-from users.views import register_view, login_view, profile_view, toggle_block_user
-from forum.views import edit_message_view, toggle_like_message, global_search_view, delete_message_view, add_news, delete_news
+from users.views import register_view, login_view, profile_view, toggle_block_user, update_avatar
+from forum.views import edit_message_view, toggle_like_message, global_search_view, delete_message_view, add_news, delete_news, add_category, home_view, catalog_view, messages_view, category_detail_view, create_topic_view, topic_view, dashboard_view, admin_panel_view, team_view, rules_view, start_chat, send_private_message
+from django.conf import settings
+from django.conf.urls.static import static
 
 # Группируем импорты из приложения forum
 from forum.views import (
@@ -20,9 +22,6 @@ from forum.views import (
     team_view, 
     rules_view
 )
-
-# Группируем импорты из приложения users
-from users.views import register_view, login_view, profile_view
 
 urlpatterns = [
     # 1. Служебные пути
@@ -64,4 +63,16 @@ urlpatterns = [
 
     path('admin-panel/news/add/', add_news, name='add_news'),
     path('admin-panel/news/<int:news_id>/delete/', delete_news, name='delete_news'),
+
+    path('profile/update-avatar/', update_avatar, name='update_avatar'),
+
+    path('messages/', messages_view, name='messages'),
+
+    path('messages/', messages_view, name='messages'),
+    path('messages/<int:dialog_id>/', messages_view, name='messages_with_id'),
+    path('messages/start/<str:username>/', start_chat, name='start_chat'),
+    path('messages/send/<int:dialog_id>/', send_private_message, name='send_message'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

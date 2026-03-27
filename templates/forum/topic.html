@@ -31,7 +31,13 @@
 
             <div class="flex items-center gap-4 mb-4">
                 <div class="w-12 h-12 rounded-full bg-slate-200 overflow-hidden shrink-0 border border-slate-200">
-                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed={{ msg.author.username }}" alt="Avatar" class="w-full h-full object-cover">
+                    {% if target_user.avatar %}
+                        <img src="{{ target_user.avatar.url }}" class="w-full h-full object-cover">
+                    {% else %}
+                        <svg class="w-full h-full text-slate-300 bg-slate-100 p-1.5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        </svg>
+                    {% endif %}
                 </div>
                 <div>
                     <div class="font-bold text-slate-700 text-lg flex items-center gap-2">

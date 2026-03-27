@@ -74,3 +74,24 @@ class NewsItem(models.Model):
 
     def __str__(self):
         return self.content[:50]
+    
+class Dialog(models.Model):
+    participants = models.ManyToManyField(User, related_name='dialogs', verbose_name='Участники')
+    
+    class Meta:
+        verbose_name = 'Диалог'
+        verbose_name_plural = 'Диалоги'
+
+    def __str__(self):
+        return f"Диалог {self.id}"
+
+class PrivateMessage(models.Model):
+    dialog = models.ForeignKey(Dialog, on_delete=models.CASCADE, related_name='messages', verbose_name='Диалог')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_private_messages', verbose_name='Отправитель')
+    text = models.TextField(verbose_name='Текст сообщения')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата отправки')
+
+    class Meta:
+        ordering = ['created_at']
+        verbose_name = 'Личное сообщение'
+        verbose_name_plural = 'Личные сообщения'

@@ -1,13 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test
 from django.utils import timezone
-from .models import Category, Topic, Message, Complaint, MessageLike, NewsItem
+from .models import Category, Topic, Message, Complaint, MessageLike, NewsItem, PrivateMessage, Dialog
 from users.models import User 
 from datetime import timedelta
 from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Q, Count
+from django.db.models import Q, Count, Max
 
 def is_admin(user):
     return user.is_authenticated and (user.is_superuser or user.role == 'admin')
@@ -223,3 +223,111 @@ def delete_news(request, news_id):
         news = get_object_or_404(NewsItem, id=news_id)
         news.delete()
     return redirect('admin_panel')
+
+# 1. Защита от дублей категорий
+@user_passes_test(is_admin)
+def add_category(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        description = request.POST.get('description', '')
+        if name:
+            # __iexact делает проверку нечувствительной к регистру
+            if Category.objects.filter(name__iexact=name).exists():
+                messages.error(request, 'Категория с таким названием уже существует!')
+            else:
+                Category.objects.create(name=name, description=description)
+                messages.success(request, 'Категория успешно добавлена.')
+    return redirect('admin_panel')
+
+# 2. Сортировка на главной странице
+def home_view(request):
+    # Добавляем подсчет тем и сортируем по убыванию
+    categories = Category.objects.annotate(topic_count=Count('topics')).order_by('-topic_count')
+    recent_topics = Topic.objects.order_by('-created_at')[:5]
+    return render(request, 'forum/index.html', {
+        'categories': categories,
+        'recent_topics': recent_topics
+    })
+
+# 3. Фильтры в каталоге
+def catalog_view(request):
+    sort = request.GET.get('sort', 'new')
+    categories = Category.objects.annotate(topic_count=Count('topics'))
+    
+    if sort == 'popular':
+        categories = categories.order_by('-topic_count')
+    else:
+        categories = categories.order_by('-id') # Подразумеваем сортировку от новых к старым
+        
+    return render(request, 'forum/catalog.html', {'categories': categories})
+
+# 4. Вьюшка для личных сообщений (заменит TemplateView)
+@login_required
+def messages_view(request):
+    # Передаем всех пользователей форума (кроме самого себя) в модальное окно поиска
+    all_users = User.objects.exclude(id=request.user.id)
+    return render(request, 'forum/messages.html', {'all_users': all_users})
+
+@login_required
+def messages_view(request, dialog_id=None):
+    # 1. Получаем все диалоги пользователя
+    # Аннотируем каждый диалог датой последнего сообщения для сортировки
+    user_dialogs = request.user.dialogs.annotate(
+        last_msg_date=Max('messages__created_at')
+    ).order_by('-last_msg_date')
+
+    # Формируем список диалогов с "другим пользователем" и последним сообщением
+    dialog_list = []
+    for d in user_dialogs:
+        other_user = d.participants.exclude(id=request.user.id).first()
+        last_msg = d.messages.last()
+        if other_user:
+            dialog_list.append({
+                'id': d.id,
+                'other_user': other_user,
+                'last_message': last_msg
+            })
+
+    # 2. Обработка активного диалога
+    active_dialog = None
+    messages = []
+    if dialog_id:
+        active_dialog_obj = get_object_or_404(Dialog, id=dialog_id)
+        if request.user in active_dialog_obj.participants.all():
+            active_dialog = {
+                'id': active_dialog_obj.id,
+                'other_user': active_dialog_obj.participants.exclude(id=request.user.id).first()
+            }
+            messages = active_dialog_obj.messages.all()
+
+    # 3. Список всех пользователей для модалки поиска
+    all_users = User.objects.exclude(id=request.user.id)
+
+    return render(request, 'forum/messages.html', {
+        'dialogs': dialog_list,
+        'active_dialog': active_dialog,
+        'messages': messages,
+        'all_users': all_users
+    })
+
+@login_required
+def start_chat(request, username):
+    other_user = get_object_or_404(User, username=username)
+    
+    # Ищем существующий диалог между этими двумя пользователями
+    dialog = Dialog.objects.filter(participants=request.user).filter(participants=other_user).first()
+    
+    if not dialog:
+        dialog = Dialog.objects.create()
+        dialog.participants.add(request.user, other_user)
+    
+    return redirect('messages_with_id', dialog_id=dialog.id)
+
+@login_required
+def send_private_message(request, dialog_id):
+    if request.method == 'POST':
+        dialog = get_object_or_404(Dialog, id=dialog_id)
+        text = request.POST.get('content')
+        if text and request.user in dialog.participants.all():
+            PrivateMessage.objects.create(dialog=dialog, sender=request.user, text=text)
+    return redirect('messages_with_id', dialog_id=dialog_id)
