@@ -1,8 +1,11 @@
 from django.db import models
-from django.conf import settings # Для связи с кастомным юзером
+from django.conf import settings 
 from django.contrib.auth import get_user_model
+# Новые импорты для системы логирования (Лабораторная №3)
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey
 
-User = get_user_model() # Получаем нашу модель пользователя
+User = get_user_model() 
 
 class Category(models.Model):
     name = models.CharField(max_length=100, verbose_name='Название')
@@ -15,7 +18,6 @@ class Topic(models.Model):
     title = models.CharField(max_length=255, verbose_name='Заголовок')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
     
-    # Связи (Внешние ключи)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='topics', verbose_name='Категория')
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='topics', verbose_name='Автор')
 
@@ -29,10 +31,8 @@ class Message(models.Model):
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name='messages', verbose_name='Тема')
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='messages', verbose_name='Автор')
 
-    # Поля для редактирования
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Дата изменения')
     is_edited = models.BooleanField(default=False, verbose_name='Изменено')
-
     is_helpful = models.BooleanField(default=False, verbose_name='Полезный ответ')
 
     def __str__(self):
@@ -44,7 +44,6 @@ class MessageLike(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        # Уникальность: один пользователь = один лайк на одно сообщение
         unique_together = ('user', 'message')
 
 class Complaint(models.Model):
@@ -63,14 +62,13 @@ class Complaint(models.Model):
 
     def __str__(self):
         return f'Жалоба от {self.sender.username}'
-    
-    
+
 class NewsItem(models.Model):
     content = models.TextField(verbose_name='Текст новости')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
 
     class Meta:
-        ordering = ['-created_at'] # Сортировка: новые сверху
+        ordering = ['-created_at']
         verbose_name = 'Новость'
         verbose_name_plural = 'Новости'
 
@@ -97,3 +95,33 @@ class PrivateMessage(models.Model):
         ordering = ['created_at']
         verbose_name = 'Личное сообщение'
         verbose_name_plural = 'Личные сообщения'
+
+# Модель логирования для выполнения требований Лабораторной №3
+class AuditLog(models.Model):
+    ACTION_CHOICES = (
+        ('delete', 'Удаление'),
+        ('edit', 'Редактирование'),
+        ('ban', 'Блокировка'),
+        ('helpful', 'Отметка полезным'),
+        ('restore', 'Восстановление'),
+    )
+
+    moderator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, verbose_name='Модератор')
+    action_type = models.CharField(max_length=20, choices=ACTION_CHOICES, verbose_name='Тип действия')
+    
+    # Generic Foreign Key для связи с любой моделью (Topic, Message и др.)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+    
+    # Поле для хранения данных для отката (rollback) в JSON
+    action_details = models.JSONField(null=True, blank=True, verbose_name='Детали для отката')
+    timestamp = models.DateTimeField(auto_now_add=True, verbose_name='Время действия')
+
+    class Meta:
+        verbose_name = 'Лог действия'
+        verbose_name_plural = 'Логи действий'
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"{self.moderator} -> {self.action_type} ({self.content_type})"

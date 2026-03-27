@@ -171,6 +171,54 @@
     </div>
 </div>
 
+<div class="mt-8 bg-white rounded-lg shadow-sm border border-slate-100 p-6">
+    <h3 class="text-lg font-bold text-slate-800 mb-4 pb-3 border-b border-slate-100">Журнал действий модераторов</h3>
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-slate-50 text-slate-600 text-xs uppercase tracking-wider">
+                    <th class="p-4 font-semibold">Модератор</th>
+                    <th class="p-4 font-semibold">Действие</th>
+                    <th class="p-4 font-semibold">Объект</th>
+                    <th class="p-4 font-semibold">Дата</th>
+                    <th class="p-4 font-semibold">Действия</th>
+                </tr>
+            </thead>
+            <tbody class="text-sm divide-y divide-slate-100">
+                {% for log in logs %}
+                <tr class="hover:bg-slate-50/50 transition">
+                    <td class="p-4 font-medium text-slate-700">{{ log.moderator.username }}</td>
+                    <td class="p-4">
+                        <span class="px-2 py-1 rounded-md text-xs font-semibold
+                            {% if log.action_type == 'delete' %}bg-red-50 text-red-600
+                            {% elif log.action_type == 'helpful' %}bg-green-50 text-green-600
+                            {% else %}bg-blue-50 text-blue-600{% endif %}">
+                            {{ log.get_action_type_display }}
+                        </span>
+                    </td>
+                    <td class="p-4 text-slate-500">{{ log.content_type }} (ID: {{ log.object_id }})</td>
+                    <td class="p-4 text-slate-500">{{ log.timestamp|date:"d.m.Y H:i" }}</td>
+                    <td class="p-4">
+                        {% if log.action_type == 'delete' and log.action_details %}
+                        <form action="{% url 'rollback_action' log.id %}" method="POST">
+                            {% csrf_token %}
+                            <button type="submit" class="text-brandBlue hover:underline font-medium">Восстановить</button>
+                        </form>
+                        {% else %}
+                        <span class="text-slate-300">—</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="p-8 text-center text-slate-400 italic">Действий пока не зафиксировано</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
 <script>
     // Живой поиск пользователей в админке
     document.getElementById('adminSearchInput').addEventListener('input', function(e) {
