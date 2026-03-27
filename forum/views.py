@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test
 from django.utils import timezone
-from .models import Category, Topic, Message, Complaint, MessageLike
+from .models import Category, Topic, Message, Complaint, MessageLike, NewsItem
 from users.models import User 
 from datetime import timedelta
 from django.http import HttpResponseForbidden, HttpResponseRedirect
@@ -17,10 +17,12 @@ def is_moderator(user):
 
 def home_view(request):
     categories = Category.objects.all()
-    recent_topics = Topic.objects.order_by('-created_at')[:5] # 5 последних тем
+    recent_topics = Topic.objects.order_by('-created_at')[:5]
+    news_items = NewsItem.objects.all()[:5] # Берем 5 самых свежих новостей
     return render(request, 'forum/index.html', {
         'categories': categories,
-        'recent_topics': recent_topics
+        'recent_topics': recent_topics,
+        'news_items': news_items # Передаем в шаблон
     })
 
 # --- АДМИН ПАНЕЛЬ (со статистикой) ---
@@ -34,11 +36,14 @@ def admin_panel_view(request):
     one_week_ago = timezone.now() - timezone.timedelta(days=7)
     new_users_count = User.objects.filter(date_joined__gte=one_week_ago).count()
 
+    news_items = NewsItem.objects.all() # Получаем все новости для управления
+    
     context = {
         'categories': categories,
         'users': users,
         'total_topics_count': total_topics_count,
         'new_users_count': new_users_count,
+        'news_items': news_items, # Добавляем новости в контекст админки
     }
     return render(request, 'forum/admin_panel.html', context)
 
@@ -186,3 +191,35 @@ def global_search_view(request):
         ).distinct()
 
     return render(request, 'forum/search_results.html', {'query': query, 'results': results})
+
+from django.http import HttpResponseRedirect, HttpResponseForbidden
+
+@login_required
+def delete_message_view(request, message_id):
+    if request.method == 'POST':
+        message_obj = get_object_or_404(Message, id=message_id)
+        
+        # Проверяем права: автор, модератор или админ
+        if request.user == message_obj.author or request.user.role in ['admin', 'mod'] or request.user.is_superuser:
+            message_obj.delete()
+            messages.success(request, 'Сообщение успешно удалено.')
+        else:
+            return HttpResponseForbidden("У вас нет прав для удаления этого сообщения.")
+            
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+
+# Функции управления новостями
+@user_passes_test(is_admin)
+def add_news(request):
+    if request.method == 'POST':
+        content = request.POST.get('content')
+        if content:
+            NewsItem.objects.create(content=content)
+    return redirect('admin_panel')
+
+@user_passes_test(is_admin)
+def delete_news(request, news_id):
+    if request.method == 'POST':
+        news = get_object_or_404(NewsItem, id=news_id)
+        news.delete()
+    return redirect('admin_panel')

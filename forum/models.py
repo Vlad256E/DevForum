@@ -61,3 +61,16 @@ class Complaint(models.Model):
 
     def __str__(self):
         return f'Жалоба от {self.sender.username}'
+    
+    
+class NewsItem(models.Model):
+    content = models.TextField(verbose_name='Текст новости')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
+
+    class Meta:
+        ordering = ['-created_at'] # Сортировка: новые сверху
+        verbose_name = 'Новость'
+        verbose_name_plural = 'Новости'
+
+    def __str__(self):
+        return self.content[:50]

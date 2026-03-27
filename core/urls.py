@@ -3,7 +3,7 @@ from django.urls import path, include
 from django.views.generic import TemplateView
 from django.contrib.auth.views import LogoutView
 from users.views import register_view, login_view, profile_view, toggle_block_user
-from forum.views import edit_message_view, toggle_like_message, global_search_view
+from forum.views import edit_message_view, toggle_like_message, global_search_view, delete_message_view, add_news, delete_news
 
 # Группируем импорты из приложения forum
 from forum.views import (
@@ -59,4 +59,9 @@ urlpatterns = [
     path('message/<int:message_id>/edit/', edit_message_view, name='edit_message'),
     path('message/<int:message_id>/like/', toggle_like_message, name='toggle_like'),
     path('search/', global_search_view, name='global_search'),
+
+    path('message/<int:message_id>/delete/', delete_message_view, name='delete_message'),
+
+    path('admin-panel/news/add/', add_news, name='add_news'),
+    path('admin-panel/news/<int:news_id>/delete/', delete_news, name='delete_news'),
 ]

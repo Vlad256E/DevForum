@@ -69,6 +69,34 @@
 
     <div class="flex flex-col gap-8">
         
+        <div class="bg-white rounded-lg shadow-sm border border-slate-100 p-6">
+            <h3 class="text-lg font-bold text-slate-800 mb-4 pb-3 border-b border-slate-100">Блок "Что нового?"</h3>
+            
+            <form action="{% url 'add_news' %}" method="POST" class="mb-4 flex gap-2">
+                {% csrf_token %}
+                <input type="text" name="content" placeholder="Текст обновления (например: Добавлена темная тема)..." required class="flex-1 bg-slate-50 border border-slate-200 rounded py-2 px-4 focus:outline-none focus:border-brandBlue focus:ring-1 focus:ring-brandBlue text-sm">
+                <button type="submit" class="bg-brandBlue hover:bg-blue-800 text-white font-semibold py-2 px-4 rounded shadow-sm transition">
+                    Добавить
+                </button>
+            </form>
+
+            <div class="space-y-2 max-h-48 overflow-y-auto pr-2">
+                {% for news in news_items %}
+                <div class="flex justify-between items-center bg-slate-50 p-3 rounded border border-slate-200">
+                    <span class="text-sm text-slate-700">{{ news.content }}</span>
+                    <form action="{% url 'delete_news' news.id %}" method="POST" onsubmit="return confirm('Удалить эту новость?');">
+                        {% csrf_token %}
+                        <button type="submit" class="text-slate-400 hover:text-red-500 transition ml-2" title="Удалить">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </form>
+                </div>
+                {% empty %}
+                <p class="text-sm text-slate-500 py-2 text-center">Новостей пока нет.</p>
+                {% endfor %}
+            </div>
+        </div>
+
         <div class="bg-white rounded-lg shadow-sm border border-slate-100 p-6 flex-1">
             <h3 class="text-lg font-bold text-slate-800 mb-4 pb-3 border-b border-slate-100">Пользователи форума</h3>
             
