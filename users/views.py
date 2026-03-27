@@ -6,6 +6,8 @@ from django.contrib import messages
 from .models import User
 from django.contrib.auth.decorators import login_required
 from forum.models import Topic, Message as ForumMessage
+from django.shortcuts import get_object_or_404
+from django.http import HttpResponseRedirect
 
 def register_view(request):
     # Если юзер уже авторизован, отправляем его на главную
@@ -38,19 +40,28 @@ def register_view(request):
     return render(request, 'users/register.html')
 
 def login_view(request):
-    # Если юзер уже авторизован, отправляем его на главную
     if request.user.is_authenticated:
         return redirect('home')
         
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
+        remember = request.POST.get('remember') # Получаем значение чекбокса 'Запомнить меня'
         
-        # authenticate проверяет, есть ли такой юзер в БД с таким паролем
+        # authenticate теперь будет использовать наш кастомный EmailOrUsernameModelBackend
         user = authenticate(request, username=username, password=password)
         
         if user is not None:
             login(request, user)
+            
+            # Логика "Запомнить меня"
+            if remember:
+                # Сессия живет 30 дней (в секундах)
+                request.session.set_expiry(2592000) 
+            else:
+                # Сессия очистится при закрытии браузера
+                request.session.set_expiry(0)
+                
             return redirect('home')
         else:
             messages.error(request, 'Неверный логин или пароль')
@@ -68,3 +79,19 @@ def profile_view(request):
         'user_topics_count': user_topics_count,
         'user_replies_count': user_replies_count
     })
+
+@login_required
+def toggle_block_user(request, user_id):
+    user_to_block = get_object_or_404(User, id=user_id)
+    
+    # Нельзя заблокировать самого себя
+    if user_to_block != request.user:
+        if user_to_block in request.user.blocked_users.all():
+            request.user.blocked_users.remove(user_to_block)
+            messages.success(request, f'Пользователь {user_to_block.username} убран из черного списка.')
+        else:
+            request.user.blocked_users.add(user_to_block)
+            messages.success(request, f'Пользователь {user_to_block.username} добавлен в черный список.')
+            
+    # Возвращаем пользователя на ту же страницу, откуда он нажал кнопку
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))

@@ -97,7 +97,7 @@
                 </div>
                 <div class="p-6">
                     <ul class="divide-y divide-slate-100 border border-slate-100 rounded-lg">
-                        {% for blocked_user in request.user.profile.blocked_users.all %}
+                        {% for blocked_user in request.user.blocked_users.all %}
                         <li class="flex items-center justify-between p-3 hover:bg-slate-50 transition">
                             <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden">
@@ -105,9 +105,12 @@
                                 </div>
                                 <span class="font-medium text-slate-700">{{ blocked_user.username }}</span>
                             </div>
-                            <button class="text-sm text-red-500 hover:text-red-700 font-medium px-3 py-1 rounded border border-red-200 hover:bg-red-50 transition">
-                                Разблокировать
-                            </button>
+                            <form action="{% url 'toggle_block_user' blocked_user.id %}" method="POST">
+                                {% csrf_token %}
+                                <button type="submit" class="text-sm text-red-500 hover:text-red-700 font-medium px-3 py-1 rounded border border-red-200 hover:bg-red-50 transition">
+                                    Разблокировать
+                                </button>
+                            </form>
                         </li>
                         {% empty %}
                         <li class="p-4 text-center text-slate-500 text-sm">Ваш чёрный список пуст.</li>

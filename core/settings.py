@@ -88,3 +88,9 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'users.User'
+
+# --- 5. АВТОРИЗАЦИЯ ---
+AUTHENTICATION_BACKENDS = [
+    'users.backends.EmailOrUsernameModelBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]

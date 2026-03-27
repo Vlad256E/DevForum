@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-8">
+    <h1 class="text-2xl font-bold mb-6">Результаты поиска по запросу: «{{ query }}»</h1>
+
+    {% if results %}
+        <div class="flex flex-col gap-4">
+            {% for topic in results %}
+            <div class="border border-slate-200 rounded-lg p-4 hover:shadow-md transition">
+                <a href="{% url 'topic_detail' topic.id %}" class="text-lg text-blue-600 hover:underline font-medium">
+                    {{ topic.title }}
+                </a>
+                <p class="text-sm text-slate-500 mt-1">Категория: {{ topic.category.name }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-slate-500 bg-slate-50 p-6 rounded-lg text-center border border-slate-200">
+            К сожалению, по вашему запросу ничего не найдено.
+        </p>
+    {% endif %}
+</div>
+{% endblock %}

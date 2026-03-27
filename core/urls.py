@@ -2,9 +2,12 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import TemplateView
 from django.contrib.auth.views import LogoutView
+from users.views import register_view, login_view, profile_view, toggle_block_user
+from forum.views import edit_message_view, toggle_like_message, global_search_view
 
 # Группируем импорты из приложения forum
 from forum.views import (
+    edit_message_view,
     home_view, 
     catalog_view, 
     category_detail_view, 
@@ -45,10 +48,15 @@ urlpatterns = [
 
     # 5. Профили и авторизация
     path('profile/', profile_view, name='profile'),
+    path('profile/block/<int:user_id>/', toggle_block_user, name='toggle_block_user'), 
     path('login/', login_view, name='login'),
     path('register/', register_view, name='register'),
     path('logout/', LogoutView.as_view(next_page='home'), name='logout'),
 
     path('team/', team_view, name='team'),
     path('rules/', rules_view, name='rules'),
+
+    path('message/<int:message_id>/edit/', edit_message_view, name='edit_message'),
+    path('message/<int:message_id>/like/', toggle_like_message, name='toggle_like'),
+    path('search/', global_search_view, name='global_search'),
 ]

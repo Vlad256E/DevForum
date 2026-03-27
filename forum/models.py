@@ -1,5 +1,8 @@
 from django.db import models
 from django.conf import settings # Для связи с кастомным юзером
+from django.contrib.auth import get_user_model
+
+User = get_user_model() # Получаем нашу модель пользователя
 
 class Category(models.Model):
     name = models.CharField(max_length=100, verbose_name='Название')
@@ -26,8 +29,21 @@ class Message(models.Model):
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name='messages', verbose_name='Тема')
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='messages', verbose_name='Автор')
 
+    # Поля для редактирования
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Дата изменения')
+    is_edited = models.BooleanField(default=False, verbose_name='Изменено')
+
     def __str__(self):
         return f'Сообщение от {self.author.username} в теме {self.topic.title}'
+
+class MessageLike(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='liked_messages')
+    message = models.ForeignKey(Message, on_delete=models.CASCADE, related_name='likes')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        # Уникальность: один пользователь = один лайк на одно сообщение
+        unique_together = ('user', 'message')
 
 class Complaint(models.Model):
     STATUS_CHOICES = (
