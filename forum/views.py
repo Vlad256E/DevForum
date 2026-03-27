@@ -322,3 +322,39 @@ def toggle_like_message(request, message_id):
     
     message_obj.author.save()
     return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+
+# Добавь это в forum/views.py
+
+@login_required
+def report_message(request, message_id):
+    """Отправка жалобы на сообщение"""
+    if request.method == 'POST':
+        msg = get_object_or_404(Message, id=message_id)
+        
+        # Получаем причину из скрытого поля формы в шаблоне
+        reason_text = request.POST.get('reason', 'Жалоба на контент')
+        
+        # ИСПРАВЛЕНО: используем sender вместо user
+        Complaint.objects.create(
+            message=msg, 
+            sender=request.user, 
+            reason=reason_text
+        )
+        
+        messages.warning(request, 'Жалоба отправлена модераторам.')
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+
+@user_passes_test(is_moderator)
+def delete_topic_view(request, topic_id):
+    """Позволяет модератору или админу удалить тему целиком"""
+    topic = get_object_or_404(Topic, id=topic_id)
+    category_id = topic.category.id
+    
+    if request.method == 'POST':
+        topic_title = topic.title
+        topic.delete()
+        messages.success(request, f'Тема "{topic_title}" успешно удалена.')
+        # После удаления темы возвращаем пользователя в категорию, где она была
+        return redirect('category_detail', category_id=category_id)
+        
+    return HttpResponseForbidden("Метод не поддерживается")

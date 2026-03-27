@@ -37,7 +37,9 @@ from forum.views import (
     send_private_message,
     set_user_role,       
     delete_user_view,
-    mark_as_helpful 
+    mark_as_helpful,
+    report_message,
+    delete_topic_view
 )
 
 urlpatterns = [
@@ -60,6 +62,8 @@ urlpatterns = [
     path('message/<int:message_id>/delete/', delete_message_view, name='delete_message'),
     path('message/helpful/<int:message_id>/', mark_as_helpful, name='mark_helpful'), 
     path('search/', global_search_view, name='global_search'),
+    path('message/<int:message_id>/report/', report_message, name='report_message'),
+    path('topic/<int:topic_id>/delete/', delete_topic_view, name='delete_topic'),
 
     # 5. Личные сообщения (Диалоги)
     path('messages/', messages_view, name='messages'),

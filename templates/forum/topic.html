@@ -81,13 +81,18 @@
                         Решение вопроса
                     </span>
                     {% endif %}
+                    
                 </div>
 
                 {% if request.user.is_authenticated and request.user != msg.author %}
-                <button class="text-xs text-slate-400 hover:text-orange-500 font-medium transition uppercase tracking-tighter">
-                    Пожаловаться
-                </button>
-                {% endif %}
+                        <form action="{% url 'report_message' msg.id %}" method="POST" class="inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="reason" value="Нарушение правил">
+                            <button type="submit" class="text-xs text-slate-400 hover:text-orange-500 font-medium transition uppercase tracking-tighter">
+                                Пожаловаться
+                            </button>
+                        </form>
+                    {% endif %}
             </div>
         </div>
         {% endfor %}
@@ -129,6 +134,17 @@
                         <span class="text-slate-500">Сообщений:</span>
                         <span class="font-medium text-slate-700">{{ forum_messages.count }}</span>
                     </div>
+                </div>
+
+                <div class="mt-6 pt-4 border-t border-slate-100">
+                    {% if request.user.is_superuser or request.user.role == 'admin' or request.user.role == 'mod' %}
+                        <form action="{% url 'delete_topic' topic.id %}" method="POST" onsubmit="return confirm('Удалить всю тему безвозвратно?');">
+                            {% csrf_token %}
+                            <button type="submit" class="w-full bg-red-50 text-red-600 py-2 rounded text-xs font-bold hover:bg-red-100 transition">
+                                УДАЛИТЬ ТЕМУ
+                            </button>
+                        </form>
+                    {% endif %}
                 </div>
             </div>
 
