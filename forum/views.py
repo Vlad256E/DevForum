@@ -113,8 +113,42 @@ def topic_view(request, topic_id):
         if text:
             Message.objects.create(topic=topic, author=request.user, text=text)
             return redirect('topic', topic_id=topic.id)
-    messages_list = topic.messages.all().order_by('posted_at')
+    
+    # Загружаем сообщения и сразу подтягиваем лайки для скорости
+    messages_list = topic.messages.all().order_by('posted_at').prefetch_related('likes')
     return render(request, 'forum/topic.html', {'topic': topic, 'forum_messages': messages_list})
+
+@login_required
+def toggle_like_message(request, message_id):
+    message_obj = get_object_or_404(Message, id=message_id)
+    if request.user == message_obj.author:
+        messages.error(request, 'Нельзя лайкать самого себя.')
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+
+    like, created = MessageLike.objects.get_or_create(user=request.user, message=message_obj)
+    if created:
+        # Согласно RewardAction из Лабораторной №10: Лайк = +5 баллов
+        message_obj.author.reputation += 5
+        messages.success(request, 'Вам понравилось это сообщение! (+5 баллов автору)')
+    else:
+        like.delete()
+        message_obj.author.reputation -= 5
+        messages.info(request, 'Лайк убран.')
+    
+    message_obj.author.save()
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+
+@user_passes_test(is_moderator)
+def mark_as_helpful(request, message_id):
+    message_obj = get_object_or_404(Message, id=message_id)
+    if not message_obj.is_helpful:
+        message_obj.is_helpful = True
+        message_obj.save()
+        # Согласно Лабораторной №10: "Ответ отмечен как решение" = +30 баллов
+        message_obj.author.reputation += 30
+        message_obj.author.save()
+        messages.success(request, 'Сообщение отмечено как решение! (+30 баллов автору)')
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
 @login_required
 def create_topic_view(request):
@@ -256,3 +290,35 @@ def global_search_view(request):
     topics = Topic.objects.filter(title__icontains=query) if query else Topic.objects.none()
     msgs_found = Message.objects.filter(text__icontains=query) if query else Message.objects.none()
     return render(request, 'forum/search_results.html', {'topics': topics, 'messages_found': msgs_found, 'query': query})
+
+# Добавь эту функцию в forum/views.py
+@user_passes_test(is_moderator)
+def mark_as_helpful(request, message_id):
+    message_obj = get_object_or_404(Message, id=message_id)
+    if not message_obj.is_helpful:
+        message_obj.is_helpful = True
+        message_obj.save()
+        # По логике RewardAction из лабы: полезный ответ = 15 баллов
+        reward_strategy(message_obj.author, 'helpful')
+        messages.success(request, 'Сообщение отмечено как полезное. Автор получил +15 к репутации.')
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+
+# toggle_like_message, чтобы она давала 5 баллов (как в RewardAction лабы)
+@login_required
+def toggle_like_message(request, message_id):
+    message_obj = get_object_or_404(Message, id=message_id)
+    if request.user == message_obj.author:
+        messages.error(request, 'Нельзя лайкать себя.')
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+    
+    like, created = MessageLike.objects.get_or_create(user=request.user, message=message_obj)
+    if created:
+        message_obj.author.reputation += 5 # Соответствует RewardAction из твоей лабы
+        messages.success(request, 'Лайк поставлен! (+5 к репутации автора)')
+    else:
+        like.delete()
+        message_obj.author.reputation -= 5
+        messages.info(request, 'Лайк убран.')
+    
+    message_obj.author.save()
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))

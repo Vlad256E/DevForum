@@ -36,7 +36,8 @@ from forum.views import (
     start_chat, 
     send_private_message,
     set_user_role,       
-    delete_user_view
+    delete_user_view,
+    mark_as_helpful 
 )
 
 urlpatterns = [
@@ -57,6 +58,7 @@ urlpatterns = [
     path('message/<int:message_id>/edit/', edit_message_view, name='edit_message'),
     path('message/<int:message_id>/like/', toggle_like_message, name='toggle_like'),
     path('message/<int:message_id>/delete/', delete_message_view, name='delete_message'),
+    path('message/helpful/<int:message_id>/', mark_as_helpful, name='mark_helpful'), 
     path('search/', global_search_view, name='global_search'),
 
     # 5. Личные сообщения (Диалоги)
@@ -86,6 +88,8 @@ urlpatterns = [
     # 8. Статические страницы
     path('team/', team_view, name='team'),
     path('rules/', rules_view, name='rules'),
+    path('message/helpful/<int:message_id>/', mark_as_helpful, name='mark_helpful'),
+    path('message/like/<int:message_id>/', toggle_like_message, name='toggle_like'),
 ]
 
 # Подключение медиа-файлов (аватарок) в режиме отладки

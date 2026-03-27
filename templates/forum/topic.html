@@ -1,143 +1,143 @@
 {% extends "base.html" %}
-
 {% block title %}{{ topic.title }} - DEVHUB{% endblock %}
 
 {% block content %}
 <div class="text-sm text-brandBlue mb-6 flex items-center gap-2">
     <a href="{% url 'home' %}" class="hover:underline">Главная</a>
     <span class="text-slate-400">/</span>
-    <span class="text-slate-600 cursor-default">{{ topic.category.name }}</span>
+    <a href="{% url 'catalog' %}" class="hover:underline">Каталог</a>
     <span class="text-slate-400">/</span>
-    <span class="text-slate-600 font-medium">{{ topic.title }}</span>
+    <a href="{% url 'category_detail' topic.category.id %}" class="hover:underline font-medium">{{ topic.category.name }}</a>
+    <span class="text-slate-400">/</span>
+    <span class="text-slate-600 truncate">{{ topic.title }}</span>
 </div>
 
 <div class="flex flex-col lg:flex-row gap-8">
-    
     <div class="flex-1 flex flex-col gap-6">
-        
         <h1 class="text-2xl font-bold text-slate-800 mb-2">{{ topic.title }}</h1>
         
         {% for msg in forum_messages %}
-        <div class="bg-white rounded-lg shadow-sm border border-slate-100 p-6 relative">
+        <div class="bg-white rounded-lg shadow-sm border {% if msg.is_helpful %}border-green-400 ring-2 ring-green-50{% else %}border-slate-100{% endif %} p-6 relative">
             
-            {% if request.user == msg.author or request.user.role == 'admin' or request.user.role == 'mod' or request.user.is_superuser %}
-            <form action="{% url 'delete_message' msg.id %}" method="POST" class="absolute top-6 right-6" onsubmit="return confirm('Вы уверены, что хотите удалить это сообщение?');">
-                {% csrf_token %}
-                <button type="submit" class="text-slate-400 hover:text-red-500 transition" title="Удалить сообщение">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                </button>
-            </form>
-            {% endif %}
-
-            <div class="flex items-center gap-4 mb-4">
-                <div class="w-12 h-12 rounded-full bg-slate-200 overflow-hidden shrink-0 border border-slate-200">
-                    {% if target_user.avatar %}
-                        <img src="{{ target_user.avatar.url }}" class="w-full h-full object-cover">
-                    {% else %}
-                        <svg class="w-full h-full text-slate-300 bg-slate-100 p-1.5" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                        </svg>
-                    {% endif %}
-                </div>
-                <div>
-                    <div class="font-bold text-slate-700 text-lg flex items-center gap-2">
-                        {{ msg.author.username }}
-                        
-                        {% if msg.author.role == 'admin' or msg.author.is_superuser %}
-                            <span class="text-[10px] bg-red-50 text-red-500 px-2 py-0.5 rounded uppercase tracking-wide">Админ</span>
-                        {% elif msg.author.role == 'mod' %}
-                            <span class="text-[10px] bg-blue-50 text-brandBlue px-2 py-0.5 rounded uppercase tracking-wide">Модератор</span>
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-slate-200 overflow-hidden shrink-0 border border-slate-200">
+                        {% if msg.author.avatar %}
+                            <img src="{{ msg.author.avatar.url }}" class="w-full h-full object-cover">
+                        {% else %}
+                            <svg class="w-full h-full text-slate-300 bg-slate-100 p-1.5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                            </svg>
                         {% endif %}
                     </div>
-                    <div class="text-sm text-slate-500">{{ msg.posted_at|date:"d E Y, H:i" }}</div>
+                    <div>
+                        <div class="font-bold text-slate-700 text-lg flex items-center gap-2">
+                            {{ msg.author.username }}
+                            {% if msg.author.role == 'admin' %}
+                                <span class="text-[10px] bg-red-50 text-red-500 px-2 py-0.5 rounded uppercase">Админ</span>
+                            {% elif msg.author.role == 'mod' %}
+                                <span class="text-[10px] bg-blue-50 text-blue-500 px-2 py-0.5 rounded uppercase">Модератор</span>
+                            {% endif %}
+                        </div>
+                        <div class="text-sm text-slate-500">
+                            {{ msg.posted_at|date:"d.m.Y, H:i" }}
+                            {% if msg.is_edited %}<span class="ml-2 italic text-slate-400">(изменено)</span>{% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    {% if request.user == msg.author or request.user.role == 'admin' %}
+                    <form action="{% url 'delete_message' msg.id %}" method="POST" onsubmit="return confirm('Удалить это сообщение?');">
+                        {% csrf_token %}
+                        <button type="submit" class="text-slate-400 hover:text-red-500 transition">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </form>
+                    {% endif %}
                 </div>
             </div>
 
-            <div class="text-slate-700 mb-2 leading-relaxed whitespace-pre-wrap">{{ msg.text }}</div>
+            <div class="text-slate-700 leading-relaxed whitespace-pre-wrap mb-6">{{ msg.text }}</div>
 
-            <div class="flex items-center gap-3 mt-4 pt-4 border-t border-slate-50">
-                <button class="text-sm font-semibold text-slate-500 hover:text-brandBlue transition flex items-center gap-1">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
-                    Ответить
-                </button>
+            <div class="flex items-center justify-between mt-4 pt-4 border-t border-slate-50">
+                <div class="flex items-center gap-4">
+                    <a href="{% url 'toggle_like' msg.id %}" class="flex items-center gap-1.5 text-sm font-bold {% if request.user in msg.likes.all %}text-red-500{% else %}text-slate-400 hover:text-red-500{% endif %} transition">
+                        <svg class="w-5 h-5" fill="{% if request.user in msg.likes.all %}currentColor{% else %}none{% endif %}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                        {{ msg.likes.count }}
+                    </a>
+
+                    {% if request.user.is_superuser or request.user.role == 'mod' or request.user.role == 'admin' %}
+                        {% if not msg.is_helpful %}
+                            <a href="{% url 'mark_helpful' msg.id %}" class="text-[10px] font-bold text-green-600 hover:bg-green-50 px-3 py-1.5 rounded-lg border border-green-200 transition uppercase tracking-wider">
+                                Отметить как решение
+                            </a>
+                        {% endif %}
+                    {% endif %}
+
+                    {% if msg.is_helpful %}
+                    <span class="flex items-center gap-1 text-[10px] font-bold text-white bg-green-500 px-3 py-1.5 rounded-lg shadow-sm uppercase tracking-wider">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        Решение вопроса
+                    </span>
+                    {% endif %}
+                </div>
+
                 {% if request.user.is_authenticated and request.user != msg.author %}
-                <button class="text-sm font-semibold text-slate-400 hover:text-red-500 transition flex items-center gap-1 ml-auto">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                <button class="text-xs text-slate-400 hover:text-orange-500 font-medium transition uppercase tracking-tighter">
                     Пожаловаться
                 </button>
                 {% endif %}
             </div>
         </div>
-        {% empty %}
-        <div class="bg-white rounded-lg shadow-sm border border-slate-100 p-10 text-center text-slate-500">
-            <p class="text-lg font-medium">В этой теме пока нет сообщений.</p>
-            <p class="text-sm mt-1">Будьте первым, кто оставит свой след!</p>
-        </div>
         {% endfor %}
 
         {% if request.user.is_authenticated %}
         <div class="bg-white rounded-lg shadow-sm border border-slate-100 p-6 mt-4">
-            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Ваш ответ</h3>
-            
+            <h3 class="text-sm font-bold text-slate-500 uppercase mb-4 tracking-widest">Ваш ответ</h3>
             <form action="" method="POST">
                 {% csrf_token %}
-                <div class="bg-slate-50 border border-slate-200 border-b-0 rounded-t-lg p-2 flex gap-1 items-center">
-                    <button type="button" class="p-1.5 text-slate-500 hover:bg-slate-200 hover:text-slate-800 rounded font-bold transition">B</button>
-                    <button type="button" class="p-1.5 text-slate-500 hover:bg-slate-200 hover:text-slate-800 rounded italic transition text-lg leading-none">I</button>
-                    <button type="button" class="p-1.5 text-slate-500 hover:bg-slate-200 hover:text-slate-800 rounded underline transition">U</button>
-                    <span class="w-px h-5 bg-slate-300 mx-1"></span>
-                    <button type="button" class="p-1.5 text-slate-500 hover:bg-slate-200 hover:text-slate-800 rounded transition font-mono">&lt;/&gt;</button>
-                </div>
-                
-                <textarea name="text" rows="4" required class="w-full border border-slate-200 rounded-b-lg p-4 focus:outline-none focus:ring-1 focus:ring-brandBlue focus:border-brandBlue resize-y bg-slate-50/50" placeholder="Напишите ваш ответ..."></textarea>
-                
+                <textarea name="text" rows="5" required class="w-full border border-slate-200 rounded-lg p-4 focus:ring-2 focus:ring-brandBlue/20 focus:border-brandBlue outline-none bg-slate-50/30 transition" placeholder="Напишите аргументированный ответ..."></textarea>
                 <div class="mt-4 flex justify-end">
-                    <button type="submit" class="bg-brandBlue hover:bg-blue-800 text-white font-semibold py-2 px-8 rounded shadow-sm transition">
+                    <button type="submit" class="bg-brandBlue hover:bg-blue-800 text-white font-bold py-2.5 px-10 rounded shadow-lg shadow-brandBlue/20 transition-all active:scale-95">
                         ОТПРАВИТЬ
                     </button>
                 </div>
             </form>
         </div>
         {% else %}
-        <div class="bg-slate-50 rounded-lg border border-slate-200 p-6 mt-4 text-center">
-            <p class="text-slate-600 mb-4">Только авторизованные пользователи могут оставлять сообщения.</p>
-            <a href="{% url 'login' %}" class="inline-block bg-brandBlue hover:bg-blue-800 text-white font-semibold py-2 px-6 rounded shadow-sm transition">Войти на сайт</a>
+        <div class="bg-blue-50 border border-blue-100 rounded-lg p-6 text-center">
+            <p class="text-blue-600 font-medium">Чтобы принять участие в обсуждении, пожалуйста, <a href="{% url 'login' %}" class="underline font-bold">войдите</a> или <a href="{% url 'register' %}" class="underline font-bold">зарегистрируйтесь</a>.</p>
         </div>
         {% endif %}
-
     </div>
 
-    <div class="w-full lg:w-72 flex flex-col gap-6">
-        
-        <div class="bg-white rounded-lg shadow-sm border border-slate-100 p-6">
-            <h3 class="text-lg font-bold text-slate-800 mb-6 pb-4 border-b border-slate-100">Информация о теме</h3>
-            
-            <div class="flex justify-around mb-6 text-center">
-                <div>
-                    <span class="block text-2xl font-bold text-brandBlue">{{ forum_messages.count }}</span>
-                    <span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Сообщений</span>
-                </div>
-                <div class="w-px bg-slate-100"></div>
-                <div>
-                    <span class="block text-2xl font-bold text-slate-700">{{ topic.created_at|date:"d.m" }}</span>
-                    <span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Создана</span>
+    <div class="w-full lg:w-80 shrink-0">
+        <div class="sticky top-6 flex flex-col gap-6">
+            <div class="bg-white rounded-lg shadow-sm border border-slate-100 p-6">
+                <h3 class="font-bold text-slate-800 mb-4 border-b pb-2">О теме</h3>
+                <div class="flex flex-col gap-4">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-slate-500">Автор:</span>
+                        <span class="font-medium text-brandBlue">{{ topic.author.username }}</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-slate-500">Создана:</span>
+                        <span class="font-medium text-slate-700">{{ topic.created_at|date:"d.m.Y" }}</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-slate-500">Сообщений:</span>
+                        <span class="font-medium text-slate-700">{{ forum_messages.count }}</span>
+                    </div>
                 </div>
             </div>
-            
-            <div class="text-sm text-slate-500 bg-slate-50 p-3 rounded mb-6 text-center border border-slate-100">
-                Автор темы:<br>
-                <span class="font-bold text-slate-700">{{ topic.author.username }}</span>
+
+            <div class="bg-slate-800 rounded-lg p-6 text-white shadow-xl shadow-slate-200">
+                <h3 class="font-bold mb-2">Правила сообщества</h3>
+                <p class="text-xs text-slate-400 leading-relaxed">Помните о взаимоуважении. За полезные ответы вы получаете очки репутации, которые повышают ваш статус в системе.</p>
+                <a href="{% url 'rules' %}" class="text-xs text-brandBlue hover:underline mt-4 block font-bold uppercase tracking-widest">Читать полностью</a>
             </div>
-            
-            {% if request.user.role == 'admin' or request.user.role == 'mod' or request.user.is_superuser %}
-            <button class="w-full bg-[#5c7c94] hover:bg-slate-700 text-white font-semibold py-2.5 rounded shadow-sm transition flex justify-center items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                УПРАВЛЕНИЕ ТЕМОЙ
-            </button>
-            {% endif %}
         </div>
-
     </div>
-
 </div>
 {% endblock %}
