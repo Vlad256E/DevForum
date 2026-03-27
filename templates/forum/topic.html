@@ -30,18 +30,24 @@
                             </svg>
                         {% endif %}
                     </div>
-                    <div>
-                        <div class="font-bold text-slate-700 text-lg flex items-center gap-2">
-                            {{ msg.author.username }}
-                            {% if msg.author.role == 'admin' %}
-                                <span class="text-[10px] bg-red-50 text-red-500 px-2 py-0.5 rounded uppercase">Админ</span>
-                            {% elif msg.author.role == 'mod' %}
-                                <span class="text-[10px] bg-blue-50 text-blue-500 px-2 py-0.5 rounded uppercase">Модератор</span>
-                            {% endif %}
+                    <div class="flex flex-col gap-1">
+                        <div class="flex items-center gap-2">
+                            <a href="#" class="font-bold text-slate-800 text-lg hover:text-brandBlue transition">{{ msg.author.username }}</a>
+                            <span class="text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded 
+                                {% if msg.author.is_superuser or msg.author.role == 'admin' %}bg-red-100 text-red-600
+                                {% elif msg.author.role == 'mod' %}bg-green-100 text-green-600
+                                {% else %}bg-slate-100 text-slate-500{% endif %}">
+                                {% if msg.author.is_superuser %}Администратор{% else %}{{ msg.author.get_role_display }}{% endif %}
+                            </span>
                         </div>
-                        <div class="text-sm text-slate-500">
+                        
+                        <div class="text-xs text-slate-500 font-medium">
+                            {{ msg.author.rank }} <span class="text-slate-300 mx-1">•</span> <span class="text-brandBlue">{{ msg.author.reputation }} pts</span>
+                        </div>
+
+                        <div class="text-xs text-slate-400 mt-1">
                             {{ msg.posted_at|date:"d.m.Y, H:i" }}
-                            {% if msg.is_edited %}<span class="ml-2 italic text-slate-400">(изменено)</span>{% endif %}
+                            {% if msg.is_edited %}<span class="ml-1 italic text-slate-300">(изменено)</span>{% endif %}
                         </div>
                     </div>
                 </div>
@@ -85,14 +91,19 @@
                 </div>
 
                 {% if request.user.is_authenticated and request.user != msg.author %}
-                        <form action="{% url 'report_message' msg.id %}" method="POST" class="inline">
-                            {% csrf_token %}
-                            <input type="hidden" name="reason" value="Нарушение правил">
-                            <button type="submit" class="text-xs text-slate-400 hover:text-orange-500 font-medium transition uppercase tracking-tighter">
-                                Пожаловаться
-                            </button>
-                        </form>
-                    {% endif %}
+                    <form action="{% url 'report_message' msg.id %}" method="POST" class="inline flex items-center gap-2">
+                        {% csrf_token %}
+                        <select name="reason" class="text-xs border border-slate-200 text-slate-500 rounded p-1 outline-none bg-slate-50 focus:border-brandBlue cursor-pointer">
+                            <option value="Флуд / Оффтоп">Флуд / Оффтоп</option>
+                            <option value="Оскорбление участника">Оскорбление участника</option>
+                            <option value="Спам / Реклама">Спам / Реклама</option>
+                            <option value="Другое нарушение">Другое нарушение</option>
+                        </select>
+                        <button type="submit" class="text-xs text-slate-400 hover:text-orange-500 font-medium transition uppercase tracking-tighter">
+                            Пожаловаться
+                        </button>
+                    </form>
+                {% endif %}
             </div>
         </div>
         {% endfor %}

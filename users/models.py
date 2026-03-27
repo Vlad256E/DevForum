@@ -16,5 +16,19 @@ class User(AbstractUser):
     # Поле черного списка
     blocked_users = models.ManyToManyField('self', symmetrical=False, blank=True, related_name='blocked_by', verbose_name='Черный список')
 
+    @property
+    def rank(self):
+        """Динамический расчет ранга на основе очков репутации"""
+        if self.reputation >= 200:
+            return "Ветеран"
+        elif self.reputation >= 100:
+            return "Опытный"
+        elif self.reputation >= 50:
+            return "Участник форума"
+        elif self.reputation >= 0:
+            return "Новичок"
+        else:
+            return "Нарушитель (Заблокирован или предупреждён)"
+
     def __str__(self):
         return self.username

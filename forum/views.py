@@ -362,13 +362,36 @@ def delete_topic_view(request, topic_id):
 @user_passes_test(is_moderator)
 def resolve_complaint(request, complaint_id, action):
     complaint = get_object_or_404(Complaint, id=complaint_id)
+    
     if action == 'delete':
-        complaint.message.delete() # Каскадно удалит и саму жалобу
-        messages.success(request, 'Сообщение успешно удалено.')
+        complaint.message.delete() 
+        messages.success(request, 'Сообщение удалено (без штрафа).')
+        
     elif action == 'reject':
         complaint.status = 'rejected'
         complaint.save()
         messages.info(request, 'Жалоба отклонена.')
+        
+    elif action == 'penalize':
+        # Получаем тип штрафа из формы
+        penalty_type = request.POST.get('penalty_type')
+        points_to_deduct = 0
+        
+        # Назначаем баллы по стратегии наказаний
+        if penalty_type == 'flood':
+            points_to_deduct = 10 # [cite: 96]
+        elif penalty_type == 'insult':
+            points_to_deduct = 15 # [cite: 97]
+        elif penalty_type == 'spam':
+            points_to_deduct = 50 # [cite: 98]
+
+        if points_to_deduct > 0:
+            author = complaint.message.author
+            author.reputation -= points_to_deduct
+            author.save()
+            complaint.message.delete() # Каскадно удалит и саму жалобу
+            messages.success(request, f'Пользователь {author.username} оштрафован на {points_to_deduct} очков. Сообщение удалено.')
+
     return redirect('dashboard')
 
 @login_required
