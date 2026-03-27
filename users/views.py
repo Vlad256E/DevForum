@@ -34,7 +34,7 @@ def register_view(request):
         user = User.objects.create_user(username=username, email=email, password=password)
         
         # Сразу авторизуем его после успешной регистрации
-        login(request, user)
+        login(request, user, backend='users.backends.EmailOrUsernameModelBackend')
         return redirect('home')
         
     return render(request, 'users/register.html')

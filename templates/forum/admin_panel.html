@@ -21,7 +21,6 @@
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
     
     <div class="flex flex-col gap-8">
-        
         <div class="bg-white rounded-lg shadow-sm border border-slate-100 p-6">
             <h3 class="text-lg font-bold text-slate-800 mb-4 pb-3 border-b border-slate-100">Управление категориями</h3>
             
@@ -74,11 +73,9 @@
                 </div>
             </div>
         </div>
-
     </div>
 
     <div class="flex flex-col gap-8">
-        
         <div class="bg-white rounded-lg shadow-sm border border-slate-100 p-6">
             <h3 class="text-lg font-bold text-slate-800 mb-4 pb-3 border-b border-slate-100">Блок "Что нового?"</h3>
             
@@ -111,12 +108,12 @@
             <h3 class="text-lg font-bold text-slate-800 mb-4 pb-3 border-b border-slate-100">Пользователи форума</h3>
             
             <div class="relative mb-4">
-                <input type="text" placeholder="Поиск пользователя по логину..." class="w-full bg-slate-50 border border-slate-200 rounded py-2 px-4 focus:outline-none focus:border-brandBlue focus:ring-1 focus:ring-brandBlue text-sm">
+                <input type="text" id="adminSearchInput" placeholder="Поиск пользователя по логину..." class="w-full bg-slate-50 border border-slate-200 rounded py-2 px-4 focus:outline-none focus:border-brandBlue focus:ring-1 focus:ring-brandBlue text-sm">
             </div>
 
-            <div class="divide-y divide-slate-100 max-h-[500px] overflow-y-auto pr-2">
+            <div class="divide-y divide-slate-100 max-h-[500px] overflow-y-auto pr-2" id="adminUserList">
                 {% for user in users %}
-                <div class="py-3 flex items-center justify-between">
+                <div class="py-3 flex items-center justify-between user-row">
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden shrink-0 border border-slate-200">
                             {% if user.avatar %}
@@ -127,22 +124,63 @@
                                 </svg>
                             {% endif %}
                         </div>
-                        <span class="font-medium text-slate-700">{{ user.username }}</span>
+                        <span class="font-medium text-slate-700 user-login">{{ user.username }}</span>
                     </div>
                     
-                    <span class="text-[11px] font-bold px-2 py-1 rounded 
-                        {% if user.is_superuser or user.role == 'admin' %}bg-red-50 text-red-600
-                        {% elif user.role == 'mod' %}bg-brandBlue/10 text-brandBlue
-                        {% else %}bg-slate-100 text-slate-600{% endif %} uppercase">
-                        {{ user.get_role_display }}
-                    </span>
+                    <div class="flex items-center gap-4">
+                        <span class="text-[11px] font-bold px-2 py-1 rounded 
+                            {% if user.is_superuser or user.role == 'admin' %}bg-red-50 text-red-600
+                            {% elif user.role == 'mod' %}bg-brandBlue/10 text-brandBlue
+                            {% else %}bg-slate-100 text-slate-600{% endif %} uppercase">
+                            {{ user.get_role_display }}
+                        </span>
+
+                        <div class="relative group">
+                            <button class="p-2 hover:bg-slate-100 rounded-full transition text-slate-400 hover:text-slate-600 focus:outline-none">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path>
+                                </svg>
+                            </button>
+                            
+                            <div class="absolute right-0 top-full pt-2 w-48 hidden group-hover:block z-50">
+                                <div class="bg-white border border-slate-100 rounded-xl shadow-xl overflow-hidden">
+                                    {% if user.role != 'mod' %}
+                                        <a href="{% url 'set_role' user.id 'mod' %}" class="block px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition">Назначить модером</a>
+                                    {% else %}
+                                        <a href="{% url 'set_role' user.id 'user' %}" class="block px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition">Снять модерку</a>
+                                    {% endif %}
+                                    
+                                    <div class="border-t border-slate-100"></div>
+                                    
+                                    <form action="{% url 'delete_user' user.id %}" method="POST" onsubmit="return confirm('Удалить аккаунт {{ user.username }} навсегда?');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition">
+                                            Удалить аккаунт
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 {% empty %}
                 <p class="text-sm text-slate-500 py-2">Пользователей пока нет.</p>
                 {% endfor %}
             </div>
         </div>
-
     </div>
 </div>
+
+<script>
+    // Живой поиск пользователей в админке
+    document.getElementById('adminSearchInput').addEventListener('input', function(e) {
+        const query = e.target.value.toLowerCase();
+        const users = document.querySelectorAll('.user-row');
+        
+        users.forEach(row => {
+            const login = row.querySelector('.user-login').textContent.toLowerCase();
+            row.style.display = login.includes(query) ? 'flex' : 'none';
+        });
+    });
+</script>
 {% endblock %}

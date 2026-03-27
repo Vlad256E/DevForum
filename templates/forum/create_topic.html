@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-slate-800">Создание новой темы</h1>
+        <p class="text-slate-500 mt-2">Поделитесь своим вопросом или идеей с сообществом</p>
+    </div>
+
+    <form method="POST" class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
+        {% csrf_token %}
+        <div class="space-y-6">
+            <div>
+                <label class="block text-sm font-bold text-slate-700 mb-2">Заголовок темы</label>
+                <input type="text" name="title" required placeholder="О чем вы хотите поговорить?" 
+                    class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 focus:outline-none focus:border-brandBlue focus:ring-1 focus:ring-brandBlue transition">
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold text-slate-700 mb-2">Раздел форума</label>
+                <select name="category" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 focus:outline-none focus:border-brandBlue transition">
+                    {% for cat in categories %}
+                        <option value="{{ cat.id }}">{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold text-slate-700 mb-2">Ваше сообщение</label>
+                <textarea name="text" rows="10" required placeholder="Опишите вашу проблему или предложение подробно..." 
+                    class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 focus:outline-none focus:border-brandBlue focus:ring-1 focus:ring-brandBlue transition"></textarea>
+            </div>
+
+            <div class="flex justify-end gap-4 pt-4">
+                <a href="{% url 'catalog' %}" class="px-6 py-3 text-slate-500 font-semibold hover:text-slate-700 transition">Отмена</a>
+                <button type="submit" class="bg-brandBlue hover:bg-blue-800 text-white font-bold py-3 px-10 rounded-xl shadow-lg transition transform hover:-translate-y-0.5">
+                    ОПУБЛИКОВАТЬ ТЕМУ
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

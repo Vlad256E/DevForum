@@ -33,6 +33,8 @@ class Message(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Дата изменения')
     is_edited = models.BooleanField(default=False, verbose_name='Изменено')
 
+    is_helpful = models.BooleanField(default=False, verbose_name='Полезный ответ')
+
     def __str__(self):
         return f'Сообщение от {self.author.username} в теме {self.topic.title}'
 
