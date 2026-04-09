@@ -19,7 +19,7 @@ def markdown_format(text):
     }
     
     # Парсим Markdown (включая таблицы и блоки кода)
-    html = markdown.markdown(text, extensions=['fenced_code', 'codehilite', 'tables'])
+    html = markdown.markdown(text, extensions=['fenced_code', 'tables'])
     # Очищаем от опасных скриптов
     clean_html = bleach.clean(html, tags=allowed_tags, attributes=allowed_attrs)
     return mark_safe(clean_html)

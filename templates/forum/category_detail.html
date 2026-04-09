@@ -104,7 +104,7 @@
 <div class="mt-8 flex justify-center">
     <div class="flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-1 shadow-sm">
         {% if topics.has_previous %}
-            <a href="?page={{ topics.previous_page_number }}" class="px-4 py-2 text-sm font-medium text-slate-500 hover:bg-slate-50 rounded-md transition">Назад</a>
+            <a href="?page={{ topics.previous_page_number }}&sort={{ request.GET.sort|default:'new' }}" class="px-4 py-2 text-sm font-medium text-slate-500 hover:bg-slate-50 rounded-md transition">Назад</a>
         {% endif %}
         
         <span class="px-4 py-2 text-sm font-bold text-brandBlue bg-blue-50 rounded-md">
@@ -112,7 +112,7 @@
         </span>
 
         {% if topics.has_next %}
-            <a href="?page={{ topics.next_page_number }}" class="px-4 py-2 text-sm font-medium text-slate-500 hover:bg-slate-50 rounded-md transition">Вперед</a>
+            <a href="?page={{ topics.next_page_number }}&sort={{ request.GET.sort|default:'new' }}" class="px-4 py-2 text-sm font-medium text-slate-500 hover:bg-slate-50 rounded-md transition">Вперед</a>
         {% endif %}
     </div>
 </div>

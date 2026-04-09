@@ -269,6 +269,12 @@ def create_topic_view(request):
             category = get_object_or_404(Category, id=category_id)
             topic = Topic.objects.create(title=title, category=category, author=request.user)
             Message.objects.create(topic=topic, author=request.user, text=text)
+            if topic.author != request.user:
+                Notification.objects.create(
+                    user=topic.author,
+                    text=f"Пользователь {request.user.username} ответил в вашей теме «{topic.title}»",
+                    link=f"/topic/{topic.id}/"
+                )
             return redirect('topic', topic_id=topic.id)
     return render(request, 'forum/create_topic.html', {'categories': categories})
 
@@ -281,6 +287,42 @@ def messages_view(request, dialog_id=None):
         other_user = d.participants.exclude(id=request.user.id).first()
         if other_user:
             dialog_list.append({'id': d.id, 'other_user': other_user, 'last_message': d.messages.last()})
+    
+    active_dialog, msgs = None, []
+    if dialog_id:
+        active_dialog_obj = get_object_or_404(Dialog, id=dialog_id)
+        if request.user in active_dialog_obj.participants.all():
+            active_dialog = {'id': active_dialog_obj.id, 'other_user': active_dialog_obj.participants.exclude(id=request.user.id).first()}
+            msgs = active_dialog_obj.messages.all()
+
+    # Получаем пользователей (исключая самого себя)
+    # Ограничиваем список до 50 человек, чтобы спасти браузер от зависания
+    all_users = User.objects.exclude(id=request.user.id).order_by('username')[:50]
+
+    return render(request, 'forum/messages.html', {
+        'dialogs': dialog_list,
+        'active_dialog': active_dialog,
+        'messages': msgs,
+        'all_users': all_users, # Передаем переменную в шаблон!
+    })
+    
+    active_dialog, msgs = None, []
+    if dialog_id:
+        active_dialog_obj = get_object_or_404(Dialog, id=dialog_id)
+        if request.user in active_dialog_obj.participants.all():
+            active_dialog = {'id': active_dialog_obj.id, 'other_user': active_dialog_obj.participants.exclude(id=request.user.id).first()}
+            msgs = active_dialog_obj.messages.all()
+
+    # Получаем пользователей (исключая самого себя)
+    # Ограничиваем список до 50 человек, чтобы спасти браузер от зависания
+    all_users = User.objects.exclude(id=request.user.id).order_by('username')[:50]
+
+    return render(request, 'forum/messages.html', {
+        'dialogs': dialog_list,
+        'active_dialog': active_dialog,
+        'messages': msgs,
+        'all_users': all_users, # Передаем переменную в шаблон!
+    })
     
     active_dialog, msgs = None, []
     if dialog_id:
@@ -318,13 +360,34 @@ def delete_dialog(request, dialog_id):
 
 # --- КАТАЛОГ И ПОИСК ---
 def catalog_view(request):
-    categories = Category.objects.annotate(topic_count=Count('topics')).order_by('-id')
+    # Получаем параметр сортировки (по умолчанию 'new')
+    sort = request.GET.get('sort', 'new')
+    
+    # Аннотируем категории количеством тем
+    categories = Category.objects.annotate(topic_count=Count('topics'))
+    
+    # Применяем сортировку
+    if sort == 'popular':
+        categories = categories.order_by('-topic_count')
+    else:
+        categories = categories.order_by('-id')
+        
     return render(request, 'forum/catalog.html', {'categories': categories})
 
 def category_detail_view(request, category_id):
     category = get_object_or_404(Category, id=category_id)
-    # Получаем все темы
-    topics_list = Topic.objects.filter(category=category).order_by('-created_at')
+    sort = request.GET.get('sort', 'new')
+    
+    # Базовый запрос
+    topics_list = Topic.objects.filter(category=category)
+    
+    # Применяем логику сортировки
+    if sort == 'popular':
+        # Считаем сообщения и сортируем по их количеству (популярные сверху)
+        topics_list = topics_list.annotate(messages_count=Count('messages')).order_by('-messages_count', '-created_at')
+    else:
+        # По умолчанию - по дате создания
+        topics_list = topics_list.order_by('-created_at')
     
     # Разбиваем по 15 тем на страницу
     paginator = Paginator(topics_list, 15)
