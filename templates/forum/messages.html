@@ -82,7 +82,7 @@
             </div>
 
             <div class="flex-1 p-6 overflow-y-auto bg-[#f8fafc] flex flex-col gap-4">
-                {% for message in messages %}
+                {% for message in chat_messages %}
                     {% if message.sender == request.user %}
                         <div class="flex gap-3 max-w-[80%] self-end flex-row-reverse">
                             <div class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden shrink-0 mt-1 border border-slate-100">

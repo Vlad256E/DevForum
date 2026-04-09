@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from forum.models import Topic, Message as ForumMessage
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponseRedirect
+from django.contrib.auth import update_session_auth_hash
 
 def register_view(request):
     # Если юзер уже авторизован, отправляем его на главную
@@ -72,22 +73,43 @@ def login_view(request):
 @login_required
 def profile_view(request):
     if request.method == 'POST':
-        new_username = request.POST.get('username')
-        new_email = request.POST.get('email')
-        # Чекбокс передает значение 'on', если он активен
-        email_notif = request.POST.get('email_notifications') == 'on' 
+        action = request.POST.get('action')
+        
+        # --- 1. ОБНОВЛЕНИЕ ОСНОВНЫХ ДАННЫХ ---
+        if action == 'update_profile':
+            new_username = request.POST.get('username')
+            new_email = request.POST.get('email')
+            email_notif = request.POST.get('email_notifications') == 'on' 
 
-        # Проверка: если логин изменился, не занят ли он кем-то другим?
-        if new_username != request.user.username and User.objects.filter(username=new_username).exists():
-            messages.error(request, 'Пользователь с таким логином уже существует.')
-        else:
-            request.user.username = new_username
-            request.user.email = new_email
-            request.user.email_notifications = email_notif
-            request.user.save()
-            messages.success(request, 'Профиль успешно обновлен!')
+            if new_username != request.user.username and User.objects.filter(username=new_username).exists():
+                messages.error(request, 'Пользователь с таким логином уже существует.')
+            else:
+                request.user.username = new_username
+                request.user.email = new_email
+                request.user.email_notifications = email_notif
+                request.user.save()
+                messages.success(request, 'Профиль успешно обновлен!')
             return redirect('profile')
 
+        # --- 2. ОБНОВЛЕНИЕ ПАРОЛЯ ---
+        elif action == 'update_password':
+            new_password = request.POST.get('new_password')
+            new_password_confirm = request.POST.get('new_password_confirm')
+            
+            if not new_password or not new_password_confirm:
+                messages.error(request, 'Пароль не может быть пустым.')
+            elif new_password != new_password_confirm:
+                messages.error(request, 'Пароли не совпадают.')
+            else:
+                # Обязательно используем set_password, чтобы пароль зашифровался!
+                request.user.set_password(new_password)
+                request.user.save()
+                # Обновляем сессию, чтобы юзера не разлогинило после смены пароля
+                update_session_auth_hash(request, request.user) 
+                messages.success(request, 'Пароль успешно обновлен!')
+            return redirect('profile')
+
+    # Если это GET-запрос (просто загрузка страницы)
     user_topics_count = Topic.objects.filter(author=request.user).count()
     user_replies_count = ForumMessage.objects.filter(author=request.user).count()
     

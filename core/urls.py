@@ -43,6 +43,7 @@ from forum.views import (
     delete_topic_view, 
     delete_dialog,
     my_topics_view,
+    rollback_action,
 )
 
 urlpatterns = [
@@ -85,6 +86,7 @@ urlpatterns = [
     # 7. Модерация и Админ-панель сайта
     path('dashboard/', dashboard_view, name='dashboard'),
     path('admin-panel/', admin_panel_view, name='admin_panel'),
+    path('admin-panel/rollback/<int:log_id>/', rollback_action, name='rollback_action'),
     path('admin-panel/category/add/', add_category, name='add_category'),
     path('admin-panel/category/<int:category_id>/delete/', delete_category, name='delete_category'),
     path('admin-panel/news/add/', add_news, name='add_news'),

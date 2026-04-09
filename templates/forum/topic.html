@@ -54,13 +54,43 @@
                 </div>
 
                 <div class="flex items-center gap-2">
-                    {% if request.user == msg.author or request.user.role == 'admin' %}
-                    <form action="{% url 'delete_message' msg.id %}" method="POST" onsubmit="return confirm('Удалить это сообщение?');">
-                        {% csrf_token %}
-                        <button type="submit" class="text-slate-400 hover:text-red-500 transition">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    {% if request.user.is_authenticated %}
+                    <div class="relative group">
+                        <button class="p-2 hover:bg-slate-100 rounded-full transition text-slate-400 hover:text-slate-600 focus:outline-none">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path>
+                            </svg>
                         </button>
-                    </form>
+                        
+                        <div class="absolute right-0 top-full pt-2 w-48 hidden group-hover:block z-50">
+                            <div class="bg-white border border-slate-100 rounded-xl shadow-xl overflow-hidden">
+                                
+                                {% if request.user != msg.author %}
+                                <form action="{% url 'toggle_block_user' msg.author.id %}" method="POST">
+                                    {% csrf_token %}
+                                    <button type="submit" class="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition">
+                                        В чёрный список
+                                    </button>
+                                </form>
+                                {% endif %}
+                                
+                                {% if request.user == msg.author or request.user.is_superuser or request.user.role == 'admin' or request.user.role == 'mod' %}
+                                
+                                {% if request.user != msg.author %}
+                                <div class="border-t border-slate-100"></div>
+                                {% endif %}
+                                
+                                <form action="{% url 'delete_message' msg.id %}" method="POST" onsubmit="return confirm('Точно удалить это сообщение?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition">
+                                        Удалить сообщение
+                                    </button>
+                                </form>
+                                {% endif %}
+                                
+                            </div>
+                        </div>
+                    </div>
                     {% endif %}
                 </div>
             </div>

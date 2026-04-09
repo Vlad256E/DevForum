@@ -104,6 +104,7 @@ def add_category(request):
 def delete_category(request, category_id):
     if request.method == 'POST':
         category = get_object_or_404(Category, id=category_id)
+        log_action(request.user, category, 'delete') # Логируем
         category.delete()
         messages.success(request, 'Категория удалена.')
     return redirect('admin_panel')
@@ -141,6 +142,7 @@ def delete_user_view(request, user_id):
     if request.method == 'POST':
         target_user = get_object_or_404(User, id=user_id)
         if not target_user.is_superuser:
+            log_action(request.user, target_user, 'ban') # Логируем
             target_user.delete()
             messages.success(request, 'Пользователь удален.')
     return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/admin-panel/'))
@@ -178,7 +180,10 @@ def dashboard_view(request):
 def resolve_complaint(request, complaint_id, action):
     complaint = get_object_or_404(Complaint, id=complaint_id)
     if action == 'delete':
+        log_action(request.user, complaint.message, 'delete') # Логируем
         complaint.message.delete() 
+        complaint.status = 'resolved' # Закрываем жалобу
+        complaint.save()
         messages.success(request, 'Сообщение удалено.')
     elif action == 'reject':
         complaint.status = 'rejected'
@@ -190,7 +195,10 @@ def resolve_complaint(request, complaint_id, action):
             author = complaint.message.author
             author.reputation -= points
             author.save()
+            log_action(request.user, complaint.message, 'delete') # Логируем
             complaint.message.delete()
+            complaint.status = 'resolved'
+            complaint.save()
             messages.success(request, f'Нарушитель оштрафован на {points} очков.')
     return redirect('dashboard')
 
@@ -234,7 +242,12 @@ def toggle_like_message(request, message_id):
 def delete_message_view(request, message_id):
     if request.method == 'POST':
         message_obj = get_object_or_404(Message, id=message_id)
+        # Если удаляет автор или модератор
         if request.user == message_obj.author or is_moderator(request.user):
+            # Логируем действие, если удаляет модератор (и это не его личное сообщение)
+            if is_moderator(request.user) and request.user != message_obj.author:
+                log_action(request.user, message_obj, 'delete')
+                
             message_obj.delete()
             messages.success(request, 'Сообщение удалено.')
         else:
@@ -295,15 +308,13 @@ def messages_view(request, dialog_id=None):
             active_dialog = {'id': active_dialog_obj.id, 'other_user': active_dialog_obj.participants.exclude(id=request.user.id).first()}
             msgs = active_dialog_obj.messages.all()
 
-    # Получаем пользователей (исключая самого себя)
-    # Ограничиваем список до 50 человек, чтобы спасти браузер от зависания
     all_users = User.objects.exclude(id=request.user.id).order_by('username')[:50]
 
     return render(request, 'forum/messages.html', {
         'dialogs': dialog_list,
         'active_dialog': active_dialog,
-        'messages': msgs,
-        'all_users': all_users, # Передаем переменную в шаблон!
+        'chat_messages': msgs,  # <--- ПЕРЕИМЕНОВАЛИ ПЕРЕМЕННУЮ ЗДЕСЬ!
+        'all_users': all_users,
     })
     
     active_dialog, msgs = None, []
@@ -335,6 +346,18 @@ def messages_view(request, dialog_id=None):
 @login_required
 def start_chat(request, username):
     other_user = get_object_or_404(User, username=username)
+    
+    # 1. Проверяем, не кинул ли собеседник нас в ЧС
+    if request.user in other_user.blocked_users.all():
+        messages.error(request, 'Этот пользователь ограничил круг лиц, которые могут присылать ему сообщения.')
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/messages/'))
+        
+    # 2. Проверяем, не кинули ли мы собеседника в ЧС
+    if other_user in request.user.blocked_users.all():
+        messages.error(request, 'Сначала уберите этого пользователя из чёрного списка.')
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/messages/'))
+
+    # Если всё чисто, продолжаем создание диалога
     dialog = Dialog.objects.filter(participants=request.user).filter(participants=other_user).first()
     if not dialog:
         dialog = Dialog.objects.create()
@@ -346,9 +369,21 @@ def send_private_message(request, dialog_id):
     if request.method == 'POST':
         dialog = get_object_or_404(Dialog, id=dialog_id)
         text = request.POST.get('content')
+        
         if text and request.user in dialog.participants.all():
-            PrivateMessage.objects.create(dialog=dialog, sender=request.user, text=text)
-    return redirect('messages_with_id', dialog_id=dialog_id)
+            # Находим второго участника диалога
+            other_user = dialog.participants.exclude(id=request.user.id).first()
+            
+            # Блокируем отправку, если кто-то из двоих находится в ЧС
+            if other_user and request.user in other_user.blocked_users.all():
+                messages.error(request, 'Невозможно отправить: вы находитесь в чёрном списке этого пользователя.')
+            elif other_user and other_user in request.user.blocked_users.all():
+                messages.error(request, 'Невозможно отправить: пользователь находится в вашем чёрном списке.')
+            else:
+                # Если никто никого не заблокировал — сохраняем сообщение
+                PrivateMessage.objects.create(dialog=dialog, sender=request.user, text=text)
+                
+    return redirect('messages_with_id', dialog_id=dialog_id)    
 
 @login_required
 def delete_dialog(request, dialog_id):
