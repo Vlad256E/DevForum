@@ -3,7 +3,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth.views import LogoutView
-from forum.views import resolve_complaint
+from forum.views import mark_notifications_read, resolve_complaint
 
 # Импорты из приложения users
 from users.views import (
@@ -101,6 +101,8 @@ urlpatterns = [
 
     path('dashboard/complaint/<int:complaint_id>/<str:action>/', resolve_complaint, name='resolve_complaint'),
     path('profile/my-topics/', my_topics_view, name='my_topics'),
+
+    path('notifications/read/', mark_notifications_read, name='mark_notifications_read'),
 ]
 
 # Подключение медиа-файлов (аватарок) в режиме отладки

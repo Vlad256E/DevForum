@@ -18,6 +18,9 @@
             }
         }
     </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
 </head>
 <body class="bg-brandBg text-slate-800 font-sans h-screen flex overflow-hidden">
 
@@ -105,6 +108,39 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                 </button>
             </form>
+            
+            {% if request.user.is_authenticated %}
+            <div class="relative group cursor-pointer flex items-center mr-6">
+                <button class="text-slate-400 hover:text-brandBlue transition relative">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                    {% if unread_notifications_count > 0 %}
+                    <span class="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500 border-2 border-white"></span>
+                    </span>
+                    {% endif %}
+                </button>
+
+                <div class="absolute right-[-20px] top-full mt-2 w-80 bg-white rounded-lg shadow-xl border border-slate-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden cursor-default">
+                    <div class="px-4 py-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Уведомления</span>
+                        {% if unread_notifications_count > 0 %}
+                            <a href="{% url 'mark_notifications_read' %}" class="text-[10px] bg-white border border-slate-200 text-brandBlue px-2 py-1 rounded shadow-sm hover:bg-slate-50 font-bold uppercase cursor-pointer">Прочитано</a>
+                        {% endif %}
+                    </div>
+                    <div class="max-h-64 overflow-y-auto flex flex-col">
+                        {% for notif in recent_notifications %}
+                            <a href="{{ notif.link }}" class="px-4 py-3 hover:bg-slate-50 border-b border-slate-50/50 transition flex flex-col gap-1 {% if not notif.is_read %}bg-blue-50/40{% endif %}">
+                                <span class="text-sm text-slate-700 leading-snug">{{ notif.text }}</span>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{{ notif.created_at|date:"d.m.Y H:i" }}</span>
+                            </a>
+                        {% empty %}
+                            <div class="p-6 text-center text-sm text-slate-400">Нет новых уведомлений</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
 
             <div class="relative group cursor-pointer flex items-center gap-3 py-2">
                 {% if request.user.is_authenticated %}

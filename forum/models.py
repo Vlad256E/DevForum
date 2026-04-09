@@ -125,3 +125,13 @@ class AuditLog(models.Model):
 
     def __str__(self):
         return f"{self.moderator} -> {self.action_type} ({self.content_type})"
+    
+class Notification(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications', verbose_name='Кому')
+    text = models.CharField(max_length=255, verbose_name='Текст уведомления')
+    link = models.CharField(max_length=255, verbose_name='Ссылка для перехода')
+    is_read = models.BooleanField(default=False, verbose_name='Прочитано')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата')
+
+    class Meta:
+        ordering = ['-created_at']

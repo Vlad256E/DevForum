@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load forum_tags %}
 {% block title %}{{ topic.title }} - DEVHUB{% endblock %}
 
 {% block content %}
@@ -64,7 +65,9 @@
                 </div>
             </div>
 
-            <div class="text-slate-700 leading-relaxed whitespace-pre-wrap mb-6">{{ msg.text }}</div>
+            <div class="text-slate-700 leading-relaxed mb-6 prose max-w-none prose-slate prose-pre:bg-slate-800 prose-pre:text-slate-100">
+                {{ msg.text|markdown }}
+            </div>
 
             <div class="flex items-center justify-between mt-4 pt-4 border-t border-slate-50">
                 <div class="flex items-center gap-4">

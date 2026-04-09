@@ -11,6 +11,7 @@ from django.db.models import Q, Count, Max
 from django.contrib.contenttypes.models import ContentType
 import json
 from django.core import serializers
+from django.core.paginator import Paginator
 
 # --- ЛОГИКА РЕПУТАЦИИ ---
 def update_reputation(user, points):
@@ -322,7 +323,14 @@ def catalog_view(request):
 
 def category_detail_view(request, category_id):
     category = get_object_or_404(Category, id=category_id)
-    topics = Topic.objects.filter(category=category).order_by('-created_at')
+    # Получаем все темы
+    topics_list = Topic.objects.filter(category=category).order_by('-created_at')
+    
+    # Разбиваем по 15 тем на страницу
+    paginator = Paginator(topics_list, 15)
+    page_number = request.GET.get('page')
+    topics = paginator.get_page(page_number)
+    
     return render(request, 'forum/category_detail.html', {'category': category, 'topics': topics})
 
 def global_search_view(request):
@@ -338,3 +346,8 @@ def my_topics_view(request):
 
 def team_view(request): return render(request, 'forum/team.html')
 def rules_view(request): return render(request, 'forum/rules.html')
+
+@login_required
+def mark_notifications_read(request):
+    request.user.notifications.filter(is_read=False).update(is_read=True)
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))

@@ -109,7 +109,7 @@ class Command(BaseCommand):
                 defaults={'reason': random.choice(reasons), 'status': 'pending'}
             )
 
-        # 6. Новости [cite: 35, 77]
+        # 6. Новости
         NewsItem.objects.get_or_create(content="Форум DEVHUB успешно запущен в тестовом режиме!")
         NewsItem.objects.get_or_create(content="Обновление правил: за спам теперь полагается штраф -50 репутации.")
 
