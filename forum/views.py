@@ -12,6 +12,7 @@ from django.contrib.contenttypes.models import ContentType
 import json
 from django.core import serializers
 from django.core.paginator import Paginator
+from django.db import IntegrityError
 
 # --- ЛОГИКА РЕПУТАЦИИ ---
 def update_reputation(user, points):
@@ -77,13 +78,21 @@ def admin_panel_view(request):
 def rollback_action(request, log_id):
     """Восстановление удаленного объекта из данных лога"""
     log_entry = get_object_or_404(AuditLog, id=log_id)
+    
     if log_entry.action_type == 'delete' and log_entry.action_details:
-        for obj in serializers.deserialize("json", log_entry.action_details):
-            obj.save()
-        log_entry.delete() 
-        messages.success(request, 'Объект успешно восстановлен.')
+        try:
+            # Пытаемся сохранить восстановленный объект
+            for obj in serializers.deserialize("json", log_entry.action_details):
+                obj.save()
+            
+            log_entry.delete() 
+            messages.success(request, 'Объект успешно восстановлен.')
+        except IntegrityError:
+            # Если связанный объект (например, автор) удален, выводим ошибку
+            messages.error(request, 'Не удалось восстановить объект: связанный автор или категория были удалены навсегда.')
     else:
         messages.error(request, 'Этот тип действия нельзя откатить.')
+        
     return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/admin-panel/'))
 
 # --- УПРАВЛЕНИЕ КАТЕГОРИЯМИ ---
@@ -179,15 +188,19 @@ def dashboard_view(request):
 @user_passes_test(is_moderator)
 def resolve_complaint(request, complaint_id, action):
     complaint = get_object_or_404(Complaint, id=complaint_id)
+    
     if action == 'delete':
-        log_action(request.user, complaint.message, 'delete') # Логируем
+        log_action(request.user, complaint.message, 'delete')
+        # Сначала удаляем сообщение. 
+        # Из-за models.CASCADE жалоба удалится сама, complaint.save() НЕ НУЖЕН.
         complaint.message.delete() 
-        complaint.status = 'resolved' # Закрываем жалобу
-        complaint.save()
         messages.success(request, 'Сообщение удалено.')
+        
     elif action == 'reject':
         complaint.status = 'rejected'
-        complaint.save()
+        complaint.save() # Здесь сообщение не удаляется, поэтому сохранение работает
+        messages.success(request, 'Жалоба отклонена.')
+        
     elif action == 'penalize':
         penalty_type = request.POST.get('penalty_type')
         points = {'flood': 10, 'insult': 15, 'spam': 50}.get(penalty_type, 0)
@@ -195,11 +208,11 @@ def resolve_complaint(request, complaint_id, action):
             author = complaint.message.author
             author.reputation -= points
             author.save()
-            log_action(request.user, complaint.message, 'delete') # Логируем
+            log_action(request.user, complaint.message, 'delete')
+            # Аналогично: после удаления сообщения жалоба исчезнет автоматически
             complaint.message.delete()
-            complaint.status = 'resolved'
-            complaint.save()
             messages.success(request, f'Нарушитель оштрафован на {points} очков.')
+            
     return redirect('dashboard')
 
 @login_required
